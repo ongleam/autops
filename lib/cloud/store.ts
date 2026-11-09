@@ -47,10 +47,14 @@ export async function database(path: string, method = "GET", body?: unknown) {
   const cfg = config();
   const response = await fetch(`${cfg.url}/rest/v1/${path}`, {
     method, headers: { apikey: cfg.secretKey, Authorization: `Bearer ${cfg.secretKey}`, "Content-Type": "application/json",
-      Prefer: method === "POST" && !path.startsWith("rpc/") ? "resolution=merge-duplicates,return=representation" : "return=representation" },
+      Prefer: method === "POST" && path.startsWith("autops_connections?on_conflict=") ? "resolution=merge-duplicates,return=representation" : "return=representation" },
     body: body === undefined ? undefined : JSON.stringify(body), cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10_000),
   });
-  if (!response.ok) throw new CloudError(503, "storage_unavailable");
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    const code = z.string().regex(/^[A-Z0-9_]{2,40}$/).safeParse(error?.code);
+    throw new CloudError(503, code.success ? `storage_unavailable_${code.data}` : "storage_unavailable");
+  }
   return response.status === 204 ? null : response.json();
 }
 export async function readConnection(owner: string, provider: Provider): Promise<StoredConnection | null> {

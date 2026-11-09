@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { compareSnapshots, readDiagnostic } from "../lib/projects/history";
+import { compareSnapshots, readDiagnostic, saveDiagnostic } from "../lib/projects/history";
 
 const products = [{ id: 1, title: "Product", price: 10 }];
 const mode = value => ({ failures: 0, p50Ms: value, p95Ms: value * 2, samples: [{ products }] });
@@ -38,13 +38,19 @@ test("saved diagnostic reads bind both owner and selected repository", async () 
   process.env.GITHUB_SESSION_SECRET = "fixture-key-that-is-at-least-32-characters";
   const id = "74e02ec7-e01d-4cf6-8e60-1ed928d3d40a";
   const repository = { id: 10, fullName: "ongleam/compiled-ex-project" };
-  globalThis.fetch = async input => {
+  globalThis.fetch = async (input, options) => {
     const url = new URL(input);
+    if (options.method === "POST") {
+      expect(options.headers.Prefer).toBe("return=representation");
+      expect(JSON.parse(options.body).github_user_id).toBe("1");
+      return Response.json([{ id, stage: "before", created_at: "2026-11-09", snapshot: snapshot(100) }]);
+    }
     expect(url.searchParams.get("repository_id")).toBe("eq.10");
     expect(url.searchParams.get("id")).toBe(`eq.${id}`);
     return Response.json(url.searchParams.get("github_user_id") === "eq.1" ? [{ id, stage: "before", created_at: "2026-11-09", snapshot: snapshot(100) }] : []);
   };
   try {
+    expect((await saveDiagnostic("1", repository, "before", snapshot(100))).diagnosticId).toBe(id);
     expect((await readDiagnostic("1", repository, id)).id).toBe(id);
     await expect(readDiagnostic("2", repository, id)).rejects.toThrow("not found");
     await expect(readDiagnostic("1&or=(true)", repository, id)).rejects.toThrow("Invalid owner");
