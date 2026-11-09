@@ -63,13 +63,13 @@ export default function Home() {
           <div className="rounded-xl border border-[var(--line)] bg-white p-5">
             <h3 className="font-semibold">Free</h3>
             <p className="mt-4 text-3xl font-semibold">3 hours<span className="text-sm font-normal text-[#71717a]"> / day</span></p>
-            <p className="mt-4 text-xl font-semibold">₩0</p>
+            <p className="mt-4 text-xl font-semibold">$0</p>
             <p className="mt-5 text-sm leading-6">A daily window for verification and deployment workflows.</p>
           </div>
           <div className="rounded-xl border border-[#18181b] bg-white p-5">
             <h3 className="font-semibold">Pro</h3>
             <p className="mt-4 text-3xl font-semibold">24 hours<span className="text-sm font-normal text-[#71717a]"> / day</span></p>
-            <p className="mt-4 text-xl font-semibold">₩19,900<span className="text-sm font-normal text-[#71717a]"> / month</span></p>
+            <p className="mt-4 text-xl font-semibold">$20<span className="text-sm font-normal text-[#71717a]"> / month</span></p>
             <p className="mt-5 text-sm leading-6">Keep the verification and deployment loop available all day.</p>
           </div>
         </div>
