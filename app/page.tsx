@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import ProjectSetupForm from "@/components/setup/ProjectSetupForm";
 import ConnectionGuide from "@/components/setup/ConnectionGuide";
@@ -36,7 +37,7 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-6 sm:py-8">
       <header className="flex items-center justify-between">
-        <Link href="/" className="text-xl font-semibold" aria-label="autops home">autops<span className="text-[#2563eb]">.</span></Link>
+        <Logo className="text-xl" />
         <Link href="/login" className="inline-flex min-h-11 items-center text-sm text-[#71717a] hover:text-[#2563eb]">Sign in</Link>
       </header>
       <section className="py-16 sm:py-24" aria-labelledby="landing-title">

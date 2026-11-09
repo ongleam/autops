@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import type { Repository } from "@/lib/github/session";
 import CloudConnection from "./CloudConnection";
 
@@ -107,7 +108,7 @@ export default function GitHubOnboarding() {
   const visible = repositories.filter((repo) => repo.fullName.toLowerCase().includes(query.toLowerCase()));
   return (
     <main className="w-full max-w-205 pt-7.5 px-8 pb-15 m-auto [&_button:disabled]:opacity-50 [&_button:disabled]:cursor-wait max-[600px]:pt-5.5 max-[600px]:px-4.5 max-[600px]:pb-10">
-      <header className="flex items-center justify-between gap-4 text-[12px] text-[#71717a] max-[600px]:[&>a:last-child]:text-[10px]"><Link className="flex items-center gap-2.5 py-0 px-3 text-[25px] font-[750] tracking-[-1px]" href="/">autops<span className="text-inherit">.</span></Link><Link href="/">Back to project</Link></header>
+      <header className="flex items-center justify-between gap-4 text-[12px] text-[#71717a] max-[600px]:[&>a:last-child]:text-[10px]"><Logo className="px-3 text-[25px]" /><Link href="/">Back to project</Link></header>
       <div className="mt-[65px] mx-0 mb-8 [&_h1]:text-[36px] [&>p:last-child]:text-[#71717a] [&>p:last-child]:leading-[1.9] [&>p:last-child]:mt-4.5 max-[600px]:mt-[45px] max-[600px]:[&_h1]:text-[28px]"><p className="text-[10px] tracking-[1.4px] text-[#a1a1aa] font-semibold mb-2.5 max-[640px]:text-[9px]">LET’S CONNECT YOUR PROJECT</p><h1>Connect your service.</h1><p>Select your GitHub repository and Vercel or Supabase project,<br />then inspect your service with read-only access.</p></div>
       <ol className="list-none p-0 flex gap-7 text-[#71717a] text-[12px] mb-6.5 flex-wrap [&_li]:flex [&_li]:gap-2 [&_li]:items-center [&_span]:[font-family:monospace] [&_span]:text-[11px] [&_[aria-current]]:text-[#27272a] [&_[aria-current]]:font-bold max-[600px]:gap-[17px] max-[600px]:text-[11px]" aria-label="Connection steps"><li aria-current={!connection?.user ? "step" : undefined}><span>01</span>GitHub authorization</li><li aria-current={connection?.user && !connection.repository ? "step" : undefined}><span>02</span>Select repository</li><li aria-current={connection?.repository ? "step" : undefined}><span>03</span>Verify connection</li></ol>
       <section className="bg-white border border-solid border-[var(--line)] rounded-[7px] p-8 shadow-[0_12px_36px_#18181b06] max-[600px]:py-[23px] max-[600px]:px-4.5" aria-labelledby="github-title" aria-busy={loading || saving}>

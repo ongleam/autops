@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
+import Logo from "@/components/Logo";
 import { getConsent } from "@/lib/mcp/oauth";
 
 export const instant = false;
@@ -8,7 +8,7 @@ export default async function ChatGPTConsent({ searchParams }: { searchParams: P
   const { flow: value } = await searchParams;
   const flow = getConsent(value, await cookies());
   return <main className="mx-auto max-w-xl px-6 py-16">
-    <Link href="/" className="text-2xl font-bold">autops.</Link>
+    <Logo className="text-2xl" />
     <h1 className="mt-8 text-2xl font-semibold">Connect your GitHub account to ChatGPT</h1>
     {flow ? <>
       <p className="mt-5 leading-8">Allow ChatGPT to read your GitHub account name and repositories authorized for the GitHub App through autops.</p>
