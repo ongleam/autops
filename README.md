@@ -1,137 +1,136 @@
 # autops
 
-autops는 서비스의 코드와 연결 상태를 살펴보고, AI와 함께 개선 지점을 이해하도록 돕는 프로젝트입니다. 핵심 아이디어는 **recursive**입니다. 현재 상태를 확인하고, 근거를 읽고, 작은 변경을 검증한 뒤 다시 확인하는 과정을 반복합니다. 현재 제공 범위는 GitHub 저장소 연결, Vercel·Supabase 프로젝트의 읽기 전용 상태 조회, ChatGPT용 MCP 도구, 공개 데모 API 진단입니다. 승인된 저장소의 기존 소스 파일은 SHA 충돌 확인 후 실제 커밋으로 수정할 수 있습니다. 커밋에 따른 기존 배포는 별도로 확인해야 합니다.
+**Connect your service. Check it with AI.**
 
-## 구성과 사용 흐름
+autops helps solo builders understand their code and service status with AI. Connect your GitHub repository, optionally connect Vercel and Supabase, and use autops in ChatGPT to inspect your project and decide what to improve next.
 
-1. 웹사이트에서 GitHub로 로그인하고 GitHub App이 접근할 저장소를 선택합니다.
-2. 필요하면 Vercel 또는 Supabase 프로젝트를 각각 연결해 기본 상태를 조회합니다. 연결은 GitHub 사용자별로 서버에 저장되며 cloud.read를 승인한 MCP에서 같은 계정으로 사용합니다.
-3. ChatGPT에서 autops 플러그인을 OAuth로 연결하고 계정·저장소 접근을 승인합니다.
-4. MCP 도구로 저장소 파일을 읽거나, 지원되는 공개 데모의 상품 API를 진단합니다. 결과를 검토한 뒤 다음 확인을 반복합니다.
+**[Get started on autops](https://autops-app.vercel.app/)** · [Connect your accounts](https://autops-app.vercel.app/onboarding) · [Open autops in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184)
 
-웹은 Next.js App Router·React·TypeScript·Tailwind CSS로 구성됩니다. `app/`은 페이지와 API 경로, `components/`는 UI, `lib/github/`·`lib/cloud/`는 외부 서비스 연결, `lib/mcp/`는 MCP와 OAuth, `lib/projects/`는 프로젝트 맥락과 데모 진단을 담당합니다. 실제 서비스 주소는 [autops](https://autops-app.vercel.app/)입니다.
+## Why we built it
 
-## 로컬 셋업
+Building alone is possible. Running alone is hard.
 
-Node.js 20.9 이상과 Bun 1.4.4가 필요합니다. 저장소를 내려받은 뒤 의존성을 설치합니다.
+AI makes it easier for non-developers and vibe coders to launch a service. But after launch, someone still has to understand failures, check whether a change works, verify deployments, and keep the service running. That work takes time and operational experience a solo builder may not have.
 
-```sh
-git clone https://github.com/ongleam/autops.git
-cd autops
-bun install --frozen-lockfile
-```
+We built autops to bring project context into the same conversation where you ask for help. Instead of gathering code, deployment information, and logs by hand, you can connect the services you use and ask AI to inspect the evidence with you.
 
-`.env.example`에 나열된 서버 전용 변수를 승인된 환경 설정 절차에 따라 로컬 환경에 등록합니다. `.env.example` 자체에 비밀 값을 쓰거나 커밋하지 마세요. GitHub 연결에는 `GITHUB_APP_ID`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_SESSION_SECRET`이 필요합니다. `GITHUB_APP_PRIVATE_KEY`는 실제 줄바꿈이 있는 PEM, `GITHUB_SESSION_SECRET`은 32자 이상의 환경별 무작위 값입니다. Vercel 연결은 `VERCEL_INTEGRATION_*` 세 변수, Supabase 연결은 `SUPABASE_OAUTH_*` 두 변수를 추가로 사용합니다. 해당 공급자를 설정하지 않으면 그 연결 UI는 준비 중 상태로 표시됩니다.
+Our goal is an AI operations assistant that supports a solo builder from launch to 100,000 monthly active users. Today, autops provides the connections and inspection tools described below. The longer-term goal includes more of the verification and deployment work.
 
-GitHub App의 권한·Callback/Setup URL과 선택형 Vercel·Supabase OAuth 앱 설정은 아래 절을 따릅니다. 로컬 개발용 OAuth Callback은 각 공급자 설정에 `http://localhost:3000` 기준으로 등록해야 합니다.
+The guiding idea is a repeatable loop: **inspect the current state, understand the evidence, make one small improvement, and check again.**
 
-```sh
-bun run dev
-```
+## What you can do today
 
-[http://localhost:3000](http://localhost:3000)에서 홈을 열고 `/login` → `/onboarding` 흐름을 확인합니다. MCP 엔드포인트는 `/api/mcp`입니다. 실제 OAuth 연결과 외부 서비스 조회는 앱 등록, 허용 저장소·프로젝트, 유효한 인증 값이 있어야 작동합니다.
+| Task | What autops provides |
+| --- | --- |
+| Connect your project | Sign in with GitHub and select a repository you have allowed the autops GitHub App to access. |
+| Understand your code | Ask ChatGPT to read supported source files from the selected repository and explain them. |
+| Check connected services | Connect Vercel and Supabase separately, choose a project for each, and inspect project status. |
+| Investigate problems | Ask for recent Vercel runtime or Supabase service logs, subject to provider permissions and availability. |
+| Make a requested code change | With write access approved, update an existing source file as a commit on the selected repository's default branch. |
+| Try API diagnostics | Compare two existing product-query approaches in the supported public demo project. |
 
-## 검증과 배포
+## Start on the website
 
-저장소의 lint 명령은 ESLint와 Stylelint를 실행합니다. 추가 스크립트는 다음과 같습니다.
+You do not need to clone this repository, run a local server, or paste an access token into autops to use the hosted service.
 
-```sh
-bun run lint
-bun run typecheck
-bun run build
-bun run start
-```
+### 1. Sign in and choose a repository
 
-Vercel 배포 설정은 `vercel.json`에 있으며 Bun 고정 lockfile 설치와 `bun run build`를 사용합니다. 프로덕션 환경에도 필요한 서버 전용 변수를 등록하고 OAuth 리디렉션 주소를 배포 도메인으로 설정해야 합니다. 배포 후 로그인·저장소 선택·MCP 연결은 실제 계정에서 확인합니다.
+1. Visit [autops](https://autops-app.vercel.app/) and select **Get started with GitHub**.
+2. Select **Continue with GitHub** and complete GitHub authorization.
+3. Install or configure the autops GitHub App. Allow access only to the repositories you want to use.
+4. On the [account connection page](https://autops-app.vercel.app/onboarding), select your repository and save the selection.
+5. Confirm that the page shows the expected GitHub account, repository, and default branch.
 
-## GitHub 저장소 온보딩
+Connecting a repository does not start diagnostics, change code, or deploy your service. You request those actions separately.
 
-`/onboarding`에서 GitHub 인증 → App 설치·저장소 접근 허용 → 저장소 선택을 진행합니다.
-대시보드의 연결 관리와 저장소 연결 버튼도 이 화면으로 이동합니다.
-관련 범위: [기획 #1](https://github.com/ongleam/autops/issues/1), [설정·연결 #2](https://github.com/ongleam/autops/issues/2).
-이번 기능은 기존 고정 데모 저장소를 사용자별 선택으로 확장합니다.
+### 2. Connect Vercel or Supabase if you use them
 
-GitHub App을 등록하고 다음과 같이 설정합니다.
+On the same account connection page:
 
-- Repository permissions의 **Contents: Read and write**를 설정합니다. Metadata 읽기는 기본 권한이며 Workflows는 요청하지 않습니다. 기존 설치는 새 권한을 승인해야 합니다. 실제 수정에는 별도의 MCP `repository.write` 동의도 필요합니다.
-- Callback URL: 서비스의 `/api/github/callback` 주소. 로컬 개발은 `http://localhost:3000/api/github/callback`을 추가 등록합니다.
-- Setup URL: 서비스의 `/onboarding` 주소. 설치 변경 후 돌아오도록 Redirect on update를 켭니다.
-- **Request user authorization (OAuth) during installation은 끕니다.** 사용자 인증은 사이트의 PKCE 흐름으로 먼저 수행하며 설치 후 Setup URL로 돌아옵니다.
-- Webhook은 이번 기능에서 사용하지 않습니다. 연결 상태·저장소 선택 시 GitHub 권한을 다시 조회합니다.
-- App 설치 시 **Only select repositories**로 필요한 저장소만 허용합니다. 조직 정책에 따라 관리자 승인이 필요합니다.
+1. Select **Vercel Connect** or **Supabase Connect** and approve the requested access.
+2. Choose the project you want to inspect and select **Select this project**.
+3. Use **Refresh project status** to check the selected project.
 
-GitHub 서버 전용 설정은 `.env.example`의 `GITHUB_`로 시작하는 승인된 5개 이름을 사용합니다. 실제 값은 승인된 환경 설정 절차로 등록하고 커밋하지 않습니다.
-`GITHUB_APP_PRIVATE_KEY`는 실제 줄바꿈이 포함된 PEM입니다. `GITHUB_SESSION_SECRET`은 32자 이상의 무작위 값이며 환경별로 다르게 설정합니다.
-인증 토큰은 AES-256-GCM으로 암호화한 HttpOnly·SameSite=Lax 쿠키에만 보관합니다. Production에서는 Secure·`__Host-` 제약을 적용합니다.
-세션은 토큰 만료와 8시간 중 짧은 기간만 유지하며 만료 후 재인증합니다. 별도 DB나 자동 갱신 토큰 저장은 추가하지 않았습니다.
+You can use either provider or both. Each project is selected independently; autops does not assume they belong to the same service. Cloud connections are saved to your GitHub account so the ChatGPT connection can use them with your permission.
 
-연결된 저장소와 계정은 `GET /api/github/session`에서 해당 브라우저 세션으로만 조회할 수 있습니다.
-`POST /api/github/selection`은 GitHub에서 다시 확인한 저장소 ID·설치 ID만 허용합니다.
-연결 해제는 브라우저 세션만 지웁니다. App 설치·계정 권한을 철회하려면 GitHub 설정에서 제거합니다.
+These connections provide read-only inspection. They do not grant deployment, database editing, or service configuration changes.
 
-온보딩 연결만으로 진단·코드 변경·배포를 실행하지 않습니다. 선택한 저장소는 ChatGPT OAuth 동의 시 연결에 묶입니다.
-MCP 소스 읽기·수정은 해당 사용자의 토큰으로 접근 권한을 매번 재확인합니다. 공개 MCP에 사용자별 저장소·토큰을 반환하면 안 됩니다.
+### 3. Connect autops in ChatGPT
 
-```sh
-bun test tests
-bun run lint
-bun run typecheck
-bun run build
-```
+Open **ChatGPT connection guide** on the [homepage](https://autops-app.vercel.app/) for the connection instructions and server address.
 
-테스트는 GitHub HTTP 응답을 격리하며 실제 GitHub 설치·인증 성공을 증명하지 않습니다.
+1. Open the existing [autops plugin in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184). Keep using this connection rather than creating duplicates.
+2. If asked for connection details, use the name **autops**, select **OAuth**, and enter:
 
-## Vercel·Supabase 읽기 전용 연결
+   ```text
+   https://autops-app.vercel.app/api/mcp
+   ```
 
-`/onboarding`에서 GitHub 계정을 먼저 연결한 뒤 각 서비스의 권한 승인 → 프로젝트 선택 → 프로젝트 상태 조회를 진행합니다.
-Vercel은 프로젝트 이름·프레임워크·최근 배포 상태를, Supabase는 프로젝트 이름·리전·상태를 조회합니다.
-DB 행, SQL, API 키, 환경 변수, 배포 실행·설정 변경은 제공하지 않습니다. 두 서비스의 프로젝트는 각각 선택하며 자동으로 같은 서비스라고 간주하지 않습니다.
+   Leave the client ID and client secret empty for automatic registration.
+3. Authorize the same GitHub account and repository you selected on the website. Approve account and repository reads, plus cloud reads if you want to inspect connected providers. Approve repository writes only when you want code changes.
+4. Select **@autops** in your conversation and check the connection:
 
-Vercel의 [Integration Console](https://vercel.com/docs/integrations/create-integration)에서 Connectable Account Integration을 등록합니다.
+   > Show my connected GitHub account and allowed repositories using autops. Confirm the selected repository and branch before inspecting anything.
 
-- **Projects: Read**, **Deployments: Read**, and runtime log read access만 허용합니다. 쓰기, 환경 변수, 도메인, 결제 권한은 요청하지 않습니다.
-- Redirect URL: 서비스의 `/api/cloud/vercel/callback` 주소. 개발용 Integration에는 `http://localhost:3000/api/cloud/vercel/callback`을 등록합니다.
-- 설치 과정에서 접근할 프로젝트를 허용합니다. 팀 설치는 토큰 교환 응답의 `team_id`로 API 범위를 제한합니다.
-- 승인된 `VERCEL_INTEGRATION_CLIENT_ID`, `VERCEL_INTEGRATION_CLIENT_SECRET`, `VERCEL_INTEGRATION_SLUG`를 환경 설정 절차로 등록합니다.
-- 외부 설치 흐름만 지원합니다. Marketplace에서 직접 시작한 설치와 기존 설치의 코드 없는 재연결은 지원하지 않으며, 인증을 다시 시작해야 합니다.
+Check that the response identifies your actual account and repository. Public demo information alone does not confirm that your account is connected.
 
-Supabase 조직 설정의 [Platform OAuth Apps](https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration)에서 앱을 등록·게시합니다. 프로젝트의 Supabase Auth 로그인 앱과 다릅니다.
+### 4. Ask about your project
 
-- **Projects: Read**를 허용하고, 진단 로그 조회에는 **Analytics: Read-only**를 추가합니다. DB SQL, Secrets, 쓰기 권한은 요청하지 않습니다. 기존 연결에는 온보딩의 **Review service permissions**에서 재승인이 필요합니다.
-- Redirect URI: 서비스의 `/api/cloud/supabase/callback` 주소. 개발용 앱에는 `http://localhost:3000/api/cloud/supabase/callback`을 등록합니다.
-- 승인된 `SUPABASE_OAUTH_CLIENT_ID`, `SUPABASE_OAUTH_CLIENT_SECRET`를 환경 설정 절차로 등록합니다.
-- PKCE S256과 사용자·브라우저 세션에 묶인 state를 검증합니다.
+Start with a specific question and ask for the evidence behind the answer. For example:
 
-두 연결은 기존 `GITHUB_SESSION_SECRET`으로 암호화한 별도의 HttpOnly 쿠키에 저장합니다. GitHub 로그인 세션에 묶여 있으며 GitHub 연결 해제·계정 변경 후에는 사용할 수 없습니다.
-클라우드 access/refresh token과 선택 프로젝트는 GitHub 사용자 ID별로 AES-256-GCM 암호화하여 서버 Supabase 저장소에 보관합니다. SUPABASE_URL과 서버 전용 SUPABASE_SECRET_KEY가 필요하며 마이그레이션은 supabase/migrations에 있습니다. Vercel Integration의 무기한 토큰은 임의로 8시간 뒤 만료시키지 않습니다. Supabase 토큰은 만료 전에 갱신하고 갱신 토큰 회전을 저장합니다. 철회된 권한만 재승인을 요구하며 일시 장애는 저장된 연결을 삭제하지 않습니다.
-서버 DB·백그라운드 실행·MCP 인증은 추가하지 않습니다. 공개 MCP에는 이 연결 정보와 사용자별 조회 결과가 노출되지 않습니다.
-클라우드 연결 해제는 현재 GitHub 사용자에 저장된 해당 공급자 연결을 서버에서 삭제합니다. 공급자의 앱 설치·권한 철회는 각 서비스 설정에서 진행합니다.
+> Read the relevant source files in my selected repository and explain how requests are handled. Include file paths and flag anything you cannot verify.
 
-`/api/cloud/{vercel|supabase}`의 경로:
+> Check my connected Vercel project's latest deployment status and recent runtime logs. Summarize any errors and explain what still needs investigation.
 
-- `GET /start`, `GET /callback`: OAuth 시작·완료.
-- `GET /session`, `DELETE /session`: 연결 상태 확인·사용자별 서버 연결 해제.
-- `GET /projects`: 현재 토큰으로 접근할 수 있는 프로젝트 목록.
-- `POST /selection`: 공급자 목록에서 권한을 재확인한 프로젝트 ID 선택.
-- `GET /overview`: 선택한 프로젝트를 공급자에서 다시 조회. 외부 프로젝트 API는 모두 GET만 사용합니다.
+> Check my connected Supabase project's status and recent service logs. Explain any failures without changing the database.
 
-API 응답은 필요한 필드만 포함하며 토큰·원본 공급자 오류를 반환하지 않습니다. 설정 전에는 준비 중 상태를 표시하고 연결을 가장하지 않습니다.
-`bun test tests`는 외부 HTTP 응답을 격리한 인증·권한·조회 테스트입니다. 실제 승인은 OAuth 앱 설정 후 두 서비스에서 각각 확인해야 합니다.
+When you want a code change:
 
-## 실제 MCP 저장소 읽기·API 진단
+> Read the affected file first, explain the problem, and make the smallest change needed to fix it. Report the saved commit and identify any tests or deployment checks you could not perform.
 
-### ChatGPT OAuth 연결
+Code changes require both GitHub App write permission and ChatGPT repository-write consent. An update changes one existing supported source file on the default branch. That commit may trigger your repository's existing CI or deployment pipeline. **A saved commit is not proof of a successful deployment.**
 
-[autops 플러그인 SSOT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184)는 OAuth와 동적 클라이언트 등록(DCR)을 사용합니다. 서버 주소는 `https://autops-app.vercel.app/api/mcp`입니다. 중복 Auto Ops·autops diagnostics·패키지형 autops 연결은 사용하지 않습니다.
-로그인은 GitHub만 사용합니다. 이전 이메일 로그인·가입·세션 API와 관련 Supabase Auth 설정은 제거했습니다. Supabase Platform OAuth 연결은 유지합니다.
-`accounts.read`는 계정·허용 저장소 목록, `repository.read`는 선택한 저장소의 소스 읽기, `repository.write`는 기존 소스 파일 수정에 사용합니다. 쓰기는 read와 write를 모두 승인해야 합니다. 기존 읽기 전용 토큰의 권한은 자동으로 확대되지 않습니다.
-온보딩에서 저장소를 선택한 뒤 ChatGPT에서 기존 autops 플러그인을 새로고침하고 요청된 OAuth 범위를 승인합니다. 연결은 최대 1시간 유지하며 PKCE S256·리디렉션 주소·state·issuer·audience와 실제 GitHub 계정을 검증합니다. cloud.read를 승인하면 get_cloud_projects와 get_project_logs가 인증된 GitHub 사용자의 서버 저장 연결을 사용합니다. 프로젝트 접근 권한은 매번 공급자에서 검증합니다. 로그는 최근 최대 60분·100건으로 제한하며 Vercel runtime과 Supabase 서비스 로그를 조회합니다. 공급자의 로그 권한·보존 기간에 따라 조회가 제한될 수 있습니다. 토큰은 MCP 응답에 포함하지 않습니다.
-배포 후 기존 플러그인에서 `get_connected_accounts` → `get_project_context` → `get_repository_file`(`lib/products.ts`) → `diagnose_project`를 실제 호출해 확인합니다. 서버 직접 호출만으로 플러그인 검증 성공을 보고하지 않습니다.
+## Try the public demo
 
-인증 없는 프로젝트 맥락은 공개 데모임을 명시합니다. 인증하면 선택한 저장소의 맥락을 반환합니다. 소스 읽기·수정은 OAuth 선택 저장소에만 허용되며 사용자·저장소·App 설치 접근 권한을 매 요청마다 검증합니다. 경로는 100 KB 이하 UTF-8 소스 파일로 제한하며 숨김 경로·워크플로·비밀 파일·경로 순회를 허용하지 않습니다.
+If you want to explore before connecting your own project, ask autops in ChatGPT:
 
-- `get_repository_file`: 선택한 저장소 기본 브랜치의 소스·커밋·파일 SHA·출처 반환.
-- `update_repository_file`: 읽은 `fileSha`를 `expectedSha`로 전달하고 수정 내용·커밋 메시지를 지정합니다. 파일이 변경됐으면 거부합니다. 기존 파일 하나를 기본 브랜치에 실제 커밋하며 파일 생성·삭제는 지원하지 않습니다. 커밋은 기존 CI/배포를 트리거할 수 있습니다. 도구 자체는 테스트·배포를 검증하지 않습니다.
-- `diagnose_project`: 선택한 저장소가 `ongleam/compiled-ex-project`일 때만 상품 API의 두 기존 조회 방식을 limit 2로 각각 3회 교차 호출합니다. 다른 저장소는 미지원임을 명시하며 다른 대상의 수치를 반환하지 않습니다. HTTP 응답 시간 p50/p95·실패 수·DB HTTP 요청 수·상품 결과 동일성을 반환합니다.
-- CPU·메모리·페이지 TTFB와 대상 서비스 배포 커밋은 미검증입니다. 콜드 스타트를 제외하지 않으며 표본이 작습니다.
-- 진단은 동일 배포 내 기존 조회 방식 비교이며 코드 변경 전후 개선으로 해석하면 안 됩니다. 영속 진단 저장·직접 배포·예약 기능은 제공하지 않습니다.
+> Inspect the public demo project and run its supported API diagnostics. Compare response times, failed requests, database request counts, and whether both approaches return the same products. Explain the measurement limits.
+
+The supported diagnostic target is [ongleam/compiled-ex-project](https://github.com/ongleam/compiled-ex-project). It compares two query approaches already running in the same demo service, with three requests per approach. It does not measure an improvement caused by a new code change.
+
+If you have connected a different repository, autops reports that these diagnostics are unsupported for that repository rather than showing demo results as your project's results.
+
+## Optional homepage settings
+
+**Project settings** lets you set a project name, service URL, and requested scope for the homepage's generated prompt. These settings stay in your browser. They do not select your authenticated GitHub repository or grant permissions; the form's repository is the fixed public demo.
+
+Under **ChatGPT connection guide**, **Copy prompt** copies a suggested inspection workflow to paste into ChatGPT. Review it before sending: the workflow describes steps that may require capabilities beyond those currently available. Copying a prompt or selecting a requested scope does not execute it, authorize changes, deploy a service, or create a schedule.
+
+## Current limits
+
+- Live API diagnostics support the public demo project only. General source inspection and connected cloud status or log reads are separate capabilities.
+- CPU, memory, and page time-to-first-byte measurements are not available through the demo diagnostics. The small sample is not a production performance benchmark.
+- Source updates support one existing UTF-8 source file at a time, up to 100 KB. File creation, deletion, secret files, and workflow files are not supported.
+- autops does not run tests or verify a deployment as part of saving a source change. Automatic deployment, persistent diagnostic history, and built-in scheduling are not available.
+- Cloud logs cover a bounded recent window, up to 60 minutes and 100 entries. Results depend on your provider permissions, log retention, and available data.
+- The homepage's **Free** and **Pro** pricing cards describe a proposed model. Billing and time-based access limits are not active.
+
+## If something does not connect
+
+| What you see | What to check |
+| --- | --- |
+| Your repository is missing | Check that you signed in with the right GitHub account and allowed that repository in the GitHub App installation. Refresh the repository list. Organization access may require administrator approval. |
+| A cloud project is missing | Check the provider account, team or organization, and the projects allowed during authorization. Refresh the project list. |
+| Project status works but logs are unavailable | Use **Review service permissions** on the account connection page to review the provider's log access, then try again. |
+| ChatGPT tools or permissions are outdated | Refresh the existing autops plugin's tools and reconnect the same account. Newly added permissions require fresh consent. |
+| Code changes are denied | Check both the GitHub App's **Contents: Read and write** permission and ChatGPT repository-write consent. |
+| Authentication has expired | Sign in again on autops and reconnect the existing ChatGPT connection as needed. |
+| ChatGPT does not offer a custom connection | Check your workspace's permissions for custom MCP connections. |
+
+## Your access and data
+
+You choose the repositories and cloud projects autops can access. Do not put passwords, tokens, or other secrets in the service URL or conversation.
+
+Disconnecting GitHub on autops signs out the current browser; it does not uninstall the GitHub App. Disconnecting a cloud provider removes that provider's saved connection for your GitHub account. To revoke the provider's app permissions as well, remove access in GitHub, Vercel, or Supabase settings.
+
+Read the [Privacy Policy](https://autops-app.vercel.app/privacy) and [Terms](https://autops-app.vercel.app/terms). For problems or suggestions, [open a GitHub issue](https://github.com/ongleam/autops/issues).
