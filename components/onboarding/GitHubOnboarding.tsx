@@ -107,7 +107,7 @@ export default function GitHubOnboarding() {
   const visible = repositories.filter((repo) => repo.fullName.toLowerCase().includes(query.toLowerCase()));
   return (
     <main className="gh-page">
-      <header className="gh-header"><Link className="brand" href="/">autops<span className="brand-dot">.</span></Link><Link href="/">프로젝트로 돌아가기 ↗</Link></header>
+      <header className="gh-header"><Link className="brand" href="/">autops<span className="brand-dot">.</span></Link><Link href="/">프로젝트로 돌아가기</Link></header>
       <div className="gh-intro"><p className="eyebrow">LET’S CONNECT YOUR PROJECT</p><h1>내 저장소에서 시작해요.</h1><p>GitHub에서 허용한 저장소를 연결하고,<br />내 서비스의 다음 단계를 준비해주세요.</p></div>
       <ol className="gh-steps" aria-label="연결 단계"><li aria-current={!connection?.user ? "step" : undefined}><span>01</span>GitHub 인증</li><li aria-current={connection?.user && !connection.repository ? "step" : undefined}><span>02</span>저장소 선택</li><li aria-current={connection?.repository ? "step" : undefined}><span>03</span>연결 확인</li></ol>
       <section className="gh-card" aria-labelledby="github-title" aria-busy={loading || saving}>
@@ -115,7 +115,7 @@ export default function GitHubOnboarding() {
         {loading ? <p role="status">연결 상태를 확인하고 있어요…</p> : !connection ? <p>연결 상태를 확인한 뒤 다시 진행해주세요.</p> : !connection.configured ? (
           <div className="gh-empty"><strong>GitHub 연결을 준비하고 있어요</strong><p>관리자가 GitHub App 설정을 완료하면 저장소를 연결할 수 있어요.</p><button className="button secondary" onClick={refresh}>설정 다시 확인</button></div>
         ) : !connection.user ? (
-          <div className="gh-empty"><h3>GitHub 계정을 연결해주세요</h3><p>인증 후 App을 설치하고 허용할 저장소를 선택해요.<br />비밀번호나 개인 토큰을 입력할 필요가 없어요.</p><button className="button primary" onClick={() => window.location.assign(new URL("/api/github/start", window.location.origin).href)}>GitHub로 계속하기 ↗</button></div>
+          <div className="gh-empty"><h3>GitHub 계정을 연결해주세요</h3><p>인증 후 App을 설치하고 허용할 저장소를 선택해요.<br />비밀번호나 개인 토큰을 입력할 필요가 없어요.</p><button className="button primary" onClick={() => window.location.assign(new URL("/api/github/start", window.location.origin).href)}>GitHub로 계속하기</button></div>
         ) : (
           <>
             <div className="gh-account"><span><strong>@{connection.user.login}</strong> 계정 인증됨</span><button type="button" onClick={disconnect} disabled={saving}>연결 해제</button></div>
@@ -125,7 +125,7 @@ export default function GitHubOnboarding() {
               <input className="gh-search" id="repository-search" type="search" value={query} placeholder="소유자 또는 저장소 이름 검색" onChange={(event) => setQuery(event.target.value)} />
               <fieldset className="gh-repositories" disabled={saving}><legend className="gh-srOnly">저장소 선택</legend>{visible.map((repo) => <label className="gh-repository" key={`${repo.installationId}:${repo.id}`}><input type="radio" name="repository" value={`${repo.installationId}:${repo.id}`} checked={selected === `${repo.installationId}:${repo.id}`} onChange={(event) => setSelected(event.target.value)} /><span><strong>{repo.fullName}</strong><small>{repo.defaultBranch || "빈 저장소"} · {repo.private ? "비공개" : "공개"}</small></span></label>)}</fieldset>
               {!visible.length && <p className="gh-empty">{repositories.length ? "검색 결과가 없어요." : "아직 접근할 수 있는 저장소가 없어요. 아래에서 App을 설치하거나 저장소 접근을 허용해주세요. 조직의 승인이 필요할 수도 있어요."}</p>}
-              <div className="gh-actions"><button className="gh-accessButton" type="button" onClick={() => window.location.assign(new URL("/api/github/install", window.location.origin).href)}>GitHub에서 저장소 접근 설정 ↗</button><button type="submit" className="button primary" disabled={!selected || saving}>{saving ? "처리 중…" : "이 저장소 연결하기 →"}</button></div>
+              <div className="gh-actions"><button className="gh-accessButton" type="button" onClick={() => window.location.assign(new URL("/api/github/install", window.location.origin).href)}>GitHub에서 저장소 접근 설정</button><button type="submit" className="button primary" disabled={!selected || saving}>{saving ? "처리 중…" : "이 저장소 연결하기 →"}</button></div>
             </form>
           </>
         )}

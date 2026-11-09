@@ -1,4 +1,4 @@
-# COMPILED
+# AUTOPS
 
 Next.js App Router · TypeScript · Tailwind CSS 기반 해커톤 기본 페이지입니다.
 

@@ -69,8 +69,8 @@ ${projectData}
         <header className={styles.heading}>
           <span className={styles.step}>02</span>
           <div>
-            <p className={styles.eyebrow}>CONNECT YOUR AI</p>
-            <h2 id="mcp-title">ChatGPT에 MCP 연결하기</h2>
+            <p className={styles.eyebrow}>MCP CONNECTION</p>
+            <h2 id="mcp-title">MCP 연결</h2>
           </div>
           <span className={styles.badge}>{serverReady ? "MCP 서버 제공 중" : "서버 확인 전"}</span>
         </header>
@@ -88,7 +88,7 @@ ${projectData}
             spellCheck={false}
           />
           <button type="button" className={styles.copyButton} onClick={copyAddress} disabled={!mcpUrl}>
-            주소 복사 <span aria-hidden="true">↗</span>
+            주소 복사
           </button>
         </div>
         <p className={styles.copyStatus} role="status">
@@ -112,8 +112,8 @@ ${projectData}
         <header className={styles.heading}>
           <span className={styles.step}>03</span>
           <div>
-            <p className={styles.eyebrow}>READY WHEN YOU ARE</p>
-            <h2 id="schedule-title">설정에 맞는 프롬프트 준비하기</h2>
+            <p className={styles.eyebrow}>MAINTENANCE</p>
+            <h2 id="schedule-title">점검 프롬프트</h2>
           </div>
         </header>
         <p className={styles.description}>
@@ -137,7 +137,7 @@ ${projectData}
             프롬프트 복사 <span aria-hidden="true">→</span>
           </button>
           <a href="https://chatgpt.com" target="_blank" rel="noreferrer" className={styles.chatLink}>
-            ChatGPT 열기 <span aria-hidden="true">↗</span>
+            ChatGPT 열기
           </a>
         </div>
         <p className={styles.copyStatus} role="status">

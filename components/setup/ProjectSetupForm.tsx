@@ -4,7 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { DEMO_PROJECT, type ProjectSettings } from "./types";
 import styles from "./ProjectSetupForm.module.css";
 
-const STORAGE_KEY = "compiled-project-settings";
+const STORAGE_KEY = "autops-project-settings";
+const LEGACY_STORAGE_KEY = "compiled-project-settings";
 
 function validServiceUrl(value: string) {
   if (!value.trim()) return true;
@@ -45,7 +46,7 @@ export default function ProjectSetupForm({ settings, onChange, onSaved }: Props)
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
       if (stored) {
         const restored = restoredSettings(JSON.parse(stored));
         if (restored) onChange(restored);
@@ -108,7 +109,7 @@ export default function ProjectSetupForm({ settings, onChange, onSaved }: Props)
 
       <div className={styles.repository}>
         <div className={styles.repoHeader}><span aria-hidden="true">⑂</span><strong>데모 GitHub 저장소</strong><span className={styles.readonly}>고정 대상</span></div>
-        <a href={DEMO_PROJECT.repository} target="_blank" rel="noreferrer">ongleam / compiled-ex-project <span aria-hidden="true">↗</span></a>
+        <a href={DEMO_PROJECT.repository} target="_blank" rel="noreferrer">ongleam / compiled-ex-project</a>
         <div className={styles.repoMeta}><code>{DEMO_PROJECT.branch}</code><span>저장소 지정 · GitHub 계정 연결은 별도 진행</span></div>
       </div>
 
@@ -131,7 +132,7 @@ export default function ProjectSetupForm({ settings, onChange, onSaved }: Props)
       <p className={styles.status} role="status" aria-live="polite">{status}</p>
       <div className={styles.saveRow}>
         <p className={styles.help}>설정은 이 브라우저에만 보관돼요.</p>
-        <button className={styles.saveButton} type="submit">이 브라우저에 저장 <span aria-hidden="true">→</span></button>
+        <button className={styles.saveButton} type="submit">설정 저장</button>
       </div>
     </form>
   );

@@ -21,7 +21,7 @@ const readOnlyAnnotations = {
 // Supabase MCP uses the same per-request factory; legacy support stays enabled here.
 const handler = createMcpHandler(() => {
   const server = new McpServer(
-    { name: "compiled", version: "0.1.0" },
+    { name: "autops", version: "0.1.0" },
     {
       instructions:
         "Start with get_project_context to confirm the fixed public demo project and available capabilities. This MCP only supplies public project context and setup guidance. It does not diagnose, modify, deploy, or schedule work. Never claim those actions succeeded.",
@@ -31,7 +31,7 @@ const handler = createMcpHandler(() => {
   server.registerTool(
     "get_project_context",
     {
-      title: "Compiled 프로젝트 확인",
+      title: "autops 프로젝트 확인",
       description:
         "Confirm the public compiled-ex-project repository, branch, MCP endpoint, and current capabilities. Does not read runtime metrics or grant GitHub access.",
       inputSchema: z.object({}).strict(),

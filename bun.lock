@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "compiled-17",
+      "name": "autops",
       "dependencies": {
         "@modelcontextprotocol/server": "2.4.0",
         "next": "16.4.5",

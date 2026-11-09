@@ -7,7 +7,7 @@ const endpoint = new URL("http://localhost:3000/api/mcp");
 
 for (const protocolVersion of [undefined, "2025-11-25"]) {
   test(`SDK client lists and calls real tools (${protocolVersion ?? "current"})`, async () => {
-    const client = new Client({ name: "compiled-test", version: "1.0.0" });
+    const client = new Client({ name: "autops-test", version: "1.0.0" });
     const transport = new StreamableHTTPClientTransport(endpoint, {
       protocolVersion,
       fetch: async (url, init) => {

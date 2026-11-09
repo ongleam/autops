@@ -1,6 +1,6 @@
 export const MCP_URL = "https://autops-app.vercel.app/api/mcp";
 
-export const MAINTENANCE_PROMPT = `연결된 Compiled 프로젝트를 확인하고 백엔드 문제 하나를 개선해주세요.
+export const MAINTENANCE_PROMPT = `연결된 autops 프로젝트를 확인하고 백엔드 문제 하나를 개선해주세요.
 대상 저장소: https://github.com/ongleam/compiled-ex-project
 대상 브랜치: main
 
@@ -24,7 +24,7 @@ export const MAINTENANCE_PROMPT = `연결된 Compiled 프로젝트를 확인하�
 export function getProjectContext() {
   return {
     projectId: "compiled-ex-project",
-    name: "Compiled demo project",
+    name: "autops demo project",
     repository: "https://github.com/ongleam/compiled-ex-project",
     branch: "main",
     mcpUrl: MCP_URL,
@@ -42,7 +42,7 @@ export function getProjectContext() {
 
 export function getConnectionInstructions() {
   return {
-    name: "Compiled",
+    name: "autops",
     serverUrl: MCP_URL,
     transport: "Streamable HTTP",
     authentication: "No authentication",
