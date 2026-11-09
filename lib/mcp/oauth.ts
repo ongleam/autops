@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { getCloudConnectionStatus } from "../cloud/connections";
-import { createSession, getSession, getCookieName, type GitHubSession } from "../github/session";
+import { createSession, getSession, readSession, getCookieName, type GitHubSession } from "../github/session";
 import { createGitHubClient } from "../github/client";
 import { MCP_URL } from "../projects/context";
 import type { RepositoryConnection } from "../github/selected-repository";
@@ -34,8 +34,9 @@ const grantSchema = flowSchema.extend({ code: z.string().min(1).max(512) });
 const accessSchema = z.object({
   issuer: z.literal(ISSUER), audience: z.literal(MCP_URL), scope: scopeSchema,
   token: z.string().min(1).max(2048), userId: z.number().int().positive(), repositoryId: z.number().int().positive().nullable(),
+  authorizationGrant: z.enum(["authorization_code", "refresh_token", "legacy"]).default("legacy"),
 });
-const refreshSchema = accessSchema.omit({ token: true }).extend({
+const refreshSchema = accessSchema.omit({ token: true, authorizationGrant: true }).extend({
   clientIdHash: z.string().regex(/^[a-f0-9]{64}$/), refreshToken: z.string().min(1).max(2048),
 });
 const githubTokenSchema = z.object({
@@ -60,11 +61,11 @@ function decode<T extends z.ZodType>(value: string | undefined, purpose: string,
 function encode(data: unknown, purpose: string, age: number) { return createSession(data, key(purpose), age); }
 function getClientIdHash(clientId: string) { return createHash("sha256").update(clientId).digest("hex"); }
 
-function createTokens(token: z.infer<typeof githubTokenSchema>, clientId: string, scope: string, userId: number, repositoryId: number | null, refreshAllowed = true) {
+function createTokens(token: z.infer<typeof githubTokenSchema>, clientId: string, scope: string, userId: number, repositoryId: number | null, refreshAllowed = true, authorizationGrant: "authorization_code" | "refresh_token" = "authorization_code") {
   const identity = { issuer: ISSUER, audience: MCP_URL, scope, userId, repositoryId };
   const lifetime = Math.min(3600, token.expires_in ?? 3600);
   const refreshAge = Math.min(token.refresh_token_expires_in ?? 0, MAX_REFRESH_AGE);
-  return json({ access_token: encode({ ...identity, token: token.access_token }, "access", lifetime),
+  return json({ access_token: encode({ ...identity, token: token.access_token, authorizationGrant }, "access", lifetime),
     token_type: "Bearer", expires_in: lifetime, scope,
     ...(refreshAllowed && token.expires_in && token.refresh_token && refreshAge > 0 ? {
       refresh_token: encode({ ...identity, clientIdHash: getClientIdHash(clientId), refreshToken: token.refresh_token }, "refresh", refreshAge),
@@ -211,7 +212,7 @@ export async function handleOAuth(request: NextRequest, action: string) {
           !token.data.refresh_token_expires_in || token.data.refresh_token === refresh.refreshToken) return json({ error: "invalid_grant" }, 400);
         const user = await createGitHubClient(token.data.access_token).getUser();
         if (user.id !== refresh.userId) return json({ error: "invalid_grant" }, 400);
-        return createTokens(token.data, clientId, scope.data, refresh.userId, refresh.repositoryId);
+        return createTokens(token.data, clientId, scope.data, refresh.userId, refresh.repositoryId, true, "refresh_token");
       }
       const grant = decode(input.get("code") || undefined, "code", grantSchema);
       const verifier = input.get("code_verifier") || "";
@@ -254,7 +255,9 @@ export function handleMcpGitHubCallback(request: NextRequest) {
 function getAccess(request: Request | undefined) {
   const value = request?.headers.get("authorization")?.match(/^Bearer ([a-zA-Z0-9_-]+)$/i)?.[1];
   if (!value) return null;
-  return decode(value, "access", accessSchema);
+  const envelope = readSession<unknown>(value, key("access"));
+  const access = accessSchema.safeParse(envelope?.data);
+  return envelope && access.success ? { ...access.data, expiresAt: envelope.expiresAt } : null;
 }
 
 export class McpAuthorizationError extends Error {
@@ -294,6 +297,7 @@ export async function getConnectedAccounts(request: Request | undefined) {
   const repositories = await client.getRepositories(appId);
   return { github: { connected: true, user, repository: repositories.find((repo) => repo.id === access.repositoryId) ?? null, repositories },
     permissions: { repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
+    authorization: { grantType: access.authorizationGrant, expiresAt: new Date(access.expiresAt * 1000).toISOString() },
     checkedAt: new Date().toISOString(),
     cloudAccounts: access.scope.split(" ").includes(CLOUD_SCOPE)
       ? { status: "checked", vercel: await getCloudConnectionStatus(String(user.id), "vercel"), supabase: await getCloudConnectionStatus(String(user.id), "supabase") }

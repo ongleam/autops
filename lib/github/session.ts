@@ -30,7 +30,7 @@ export function createSession(data: unknown, secret: string, lifetime: number, n
   return Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString("base64url");
 }
 
-export function getSession<T>(value: string | undefined, secret: string, now = Math.floor(Date.now() / 1000)): T | null {
+export function readSession<T>(value: string | undefined, secret: string, now = Math.floor(Date.now() / 1000)): { data: T; expiresAt: number } | null {
   if (!value || value.length > 3800) return null;
   try {
     const bytes = Buffer.from(value, "base64url");
@@ -39,8 +39,12 @@ export function getSession<T>(value: string | undefined, secret: string, now = M
     decipher.setAuthTag(bytes.subarray(12, 28));
     const plaintext = Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]);
     const payload = JSON.parse(plaintext.toString("utf8"));
-    return Number.isFinite(payload.expiresAt) && payload.expiresAt > now ? payload.data as T : null;
+    return Number.isFinite(payload.expiresAt) && payload.expiresAt > now ? { data: payload.data as T, expiresAt: payload.expiresAt } : null;
   } catch {
     return null;
   }
+}
+
+export function getSession<T>(value: string | undefined, secret: string, now = Math.floor(Date.now() / 1000)): T | null {
+  return readSession<T>(value, secret, now)?.data ?? null;
 }

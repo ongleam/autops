@@ -76,6 +76,7 @@ test("expiring GitHub grants receive an opaque client-bound refresh token", asyn
   const data = await result.json();
   expect(data.expires_in).toBe(3600);
   expect(data.refresh_token_expires_in).toBe(15897600);
+  expect(unseal(data.access_token, "access").authorizationGrant).toBe("authorization_code");
   expect(data.refresh_token).not.toContain("upstream-refresh");
   expect(data.access_token).not.toContain("upstream-access");
   expect(unseal(data.refresh_token, "refresh")).toEqual({ issuer: ISSUER, audience: `${ISSUER}/api/mcp`, scope: boundScope,
@@ -121,7 +122,7 @@ test("refresh rotates upstream credentials while preserving identity and narrowi
   expect(data.refresh_token).not.toBe(initial.refresh_token);
   expect(unseal(data.refresh_token, "refresh")).toMatchObject({ refreshToken: "rotated-refresh", userId: 7, repositoryId: 42,
     scope: "accounts.read repository.read", issuer: ISSUER, audience: `${ISSUER}/api/mcp` });
-  expect(unseal(data.access_token, "access")).toMatchObject({ token: "rotated-access", userId: 7, repositoryId: 42, scope: data.scope });
+  expect(unseal(data.access_token, "access")).toMatchObject({ token: "rotated-access", userId: 7, repositoryId: 42, scope: data.scope, authorizationGrant: "refresh_token" });
   expect(JSON.stringify(data)).not.toContain("rotated-");
   const enlarged = await tokenRequest({ grant_type: "refresh_token", client_id: clientId, refresh_token: data.refresh_token, scope: boundScope });
   expect(enlarged.status).toBe(400);

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { createPrivateKey, generateKeyPairSync, verify } from "node:crypto";
-import { createSession, getSession, getCookieName } from "../lib/github/session";
+import { createSession, getSession, readSession, getCookieName } from "../lib/github/session";
 import { createGitHubClient, createAppJwt, validateSelection } from "../lib/github/client";
 
 const secret = "test-only-session-secret-with-at-least-32-characters";
@@ -9,6 +9,9 @@ test("session encrypts credentials, rejects tampering, and expires", () => {
   const value = createSession({ token: "test-private-token" }, secret, 60, 1000);
   expect(value).not.toContain("test-private-token");
   expect(getSession(value, secret, 1001)).toEqual({ token: "test-private-token" });
+  expect(readSession(value, secret, 1001)).toEqual({ data: { token: "test-private-token" }, expiresAt: 1060 });
+  expect(readSession(value, secret, 1060)).toBeNull();
+  expect(readSession(value, secret + "other", 1001)).toBeNull();
   expect(getSession(value, secret, 1060)).toBeNull();
   expect(getSession(value.slice(0, -4) + "abcd", secret, 1001)).toBeNull();
   expect(getSession(value, secret + "other", 1001)).toBeNull();
