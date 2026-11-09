@@ -6,13 +6,13 @@ import { createSession, getSession, getCookieName, type GitHubSession, type OAut
 
 const MAX_SESSION_AGE = 8 * 60 * 60;
 const MESSAGES: Record<string, string> = {
-  setup_required: "GitHub App 서버 설정이 필요해요. 관리자에게 문의해주세요.",
-  reconnect: "GitHub 인증이 만료되었거나 해제됐어요. 다시 연결해주세요.",
-  forbidden: "이 요청을 허용할 수 없어요. 현재 페이지에서 다시 시도해주세요.",
-  invalid_repository: "연결할 저장소를 선택해주세요.",
-  repository_forbidden: "이 저장소의 접근 권한이 없어요. GitHub에서 허용한 저장소를 확인해주세요.",
-  github_unavailable: "GitHub 정보를 가져오지 못했어요. 잠시 후 다시 시도해주세요.",
-  invalid_request: "요청 형식을 확인해주세요.",
+  setup_required: "GitHub App setup is required. Contact your administrator.",
+  reconnect: "GitHub authorization has expired or was revoked. Please reconnect.",
+  forbidden: "This request is not allowed. Try again from the current page.",
+  invalid_repository: "Select a repository to connect.",
+  repository_forbidden: "You do not have access to this repository. Check repository access in GitHub.",
+  github_unavailable: "Could not load GitHub information. Please try again shortly.",
+  invalid_request: "Check the request format.",
 };
 
 function getConfig() {

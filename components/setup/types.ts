@@ -6,7 +6,7 @@ export type ProjectSettings = {
 };
 
 export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
-  name: "나의 첫 서비스",
+  name: "My first service",
   serviceUrl: "",
   allowChanges: false,
   allowDeployment: false,

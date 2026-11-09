@@ -36,27 +36,27 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-6 sm:py-8">
       <header className="flex items-center justify-between">
-        <Link href="/" className="text-xl font-semibold" aria-label="autops 홈">autops<span className="text-[#2563eb]">.</span></Link>
-        <Link href="/login" className="inline-flex min-h-11 items-center text-sm text-[#71717a] hover:text-[#2563eb]">로그인</Link>
+        <Link href="/" className="text-xl font-semibold" aria-label="autops home">autops<span className="text-[#2563eb]">.</span></Link>
+        <Link href="/login" className="inline-flex min-h-11 items-center text-sm text-[#71717a] hover:text-[#2563eb]">Sign in</Link>
       </header>
       <section className="py-16 sm:py-24" aria-labelledby="landing-title">
-        <h1 id="landing-title" className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">서비스를 연결하고,<br />AI와 점검하세요.</h1>
-        <p className="mt-5 text-sm leading-7 text-[#71717a]">GitHub로 로그인하고 ChatGPT에서 내 프로젝트를 확인하세요.</p>
-        <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]">GitHub로 시작하기 <span className="ml-3" aria-hidden="true">→</span></Link>
+        <h1 id="landing-title" className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Connect your service.<br />Check it with AI.</h1>
+        <p className="mt-5 text-sm leading-7 text-[#71717a]">Sign in with GitHub하고 ChatGPT에서 내 프로젝트를 확인하세요.</p>
+        <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]">Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
       </section>
       <div className="grid gap-3">
         <details className="rounded-lg border border-[var(--line)] bg-white p-4">
-          <summary className="cursor-pointer text-sm font-medium">ChatGPT 연결 가이드</summary>
+          <summary className="cursor-pointer text-sm font-medium">ChatGPT connection guide</summary>
           <div className="mt-4 grid gap-3"><ConnectionGuide settings={settings} mcpUrl={`${origin}/api/mcp`} serverReady={mcpReady} /></div>
         </details>
         <details id="project" className="rounded-lg border border-[var(--line)] bg-white p-4">
-          <summary className="cursor-pointer text-sm font-medium">프로젝트 설정{saved && <span className="ml-2 text-xs text-[#2563eb]">저장됨</span>}</summary>
+          <summary className="cursor-pointer text-sm font-medium">Project settings{saved && <span className="ml-2 text-xs text-[#2563eb]">Saved</span>}</summary>
           <div className="mt-4"><ProjectSetupForm settings={settings} onChange={updateSettings} onSaved={() => setSaved(true)} /></div>
         </details>
       </div>
       <footer className="mt-10 flex gap-5 text-xs text-[#71717a]">
-        <Link href="/terms" className="py-2">이용약관</Link>
-        <Link href="/privacy" className="py-2">개인정보 처리방침</Link>
+        <Link href="/terms" className="py-2">Terms</Link>
+        <Link href="/privacy" className="py-2">Privacy</Link>
       </footer>
     </main>
   );
