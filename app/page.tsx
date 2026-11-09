@@ -41,7 +41,7 @@ export default function Home() {
       </header>
       <section className="py-16 sm:py-24" aria-labelledby="landing-title">
         <h1 id="landing-title" className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Connect your service.<br />Check it with AI.</h1>
-        <p className="mt-5 text-sm leading-7 text-[#71717a]">Sign in with GitHub하고 ChatGPT에서 내 프로젝트를 확인하세요.</p>
+        <p className="mt-5 text-sm leading-7 text-[#71717a]">Sign in with GitHub and check your project in ChatGPT.</p>
         <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]">Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
       </section>
       <div className="grid gap-3">
