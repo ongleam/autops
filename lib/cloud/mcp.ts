@@ -35,6 +35,7 @@ async function getVercelLogs(session: CloudSession, project: CloudProject, start
   const deploymentId = z.string().regex(/^[a-zA-Z0-9_-]{1,256}$/).parse(overview.deployment.id);
   const url = new URL(`https://api.vercel.com/v1/projects/${encodeURIComponent(project.id)}/deployments/${encodeURIComponent(deploymentId)}/runtime-logs`);
   url.searchParams.set("teamId", session.teamId);
+  url.searchParams.set("format", "lines");
   const signal = AbortSignal.timeout(5_000);
   const response = await fetch(url, { headers: { Authorization: `Bearer ${session.token}`, Accept: "application/stream+json, application/x-ndjson" },
     cache: "no-store", redirect: "error", signal }).catch(() => {

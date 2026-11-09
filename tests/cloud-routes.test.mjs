@@ -46,11 +46,17 @@ beforeEach(() => {
       return Response.json({ access_token: "rotated-access", refresh_token: "rotated-refresh", expires_in: 3600, team_id: "team_a" });
     }
     if (providerStatus !== 200) return Response.json({}, {status: providerStatus});
-    if (url.pathname.includes("/analytics/") || url.pathname.includes("/observability/")) {
+    if (url.pathname.endsWith("/runtime-logs")) {
+      logReads++;
+      expect(url.pathname).toContain("/projects/project_a/deployments/deployment_a/");
+      return new Response(JSON.stringify({timestampInMs:Date.now(),level:"info",message:"Bearer cloud-1",source:"serverless"})+"\n",{headers:{"Content-Type":"application/x-ndjson"}});
+    }
+    if (url.pathname === "/v9/projects/project_a") return Response.json(projects[0]);
+    if (url.pathname === "/v6/deployments") return Response.json({deployments:[{uid:"deployment_a",state:"READY",created:Date.now()}]});
+    if (url.pathname.includes("/analytics/")) {
       logReads++;
       if (url.hostname === "api.supabase.com") return Response.json({result:[{ timestamp:"2026-11-09",event_message:"Bearer cloud-1" }]});
-      expect(JSON.parse(init.body).scope.projectIds).toEqual(["project_a"]);
-      return Response.json({events:[{message:"Bearer cloud-1"}],pagination:{hasMore:false}});
+      throw new Error("Unexpected log provider");
     }
     return Response.json(url.hostname === "api.vercel.com" ? { projects } : projects);
   };
