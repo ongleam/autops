@@ -2,7 +2,7 @@ import { z } from "zod/v4";
 
 export type Provider = "vercel" | "supabase";
 export type CloudConfig = { clientId: string; clientSecret: string; slug?: string; secret: string };
-export type CloudSession = { token: string; expiresAt: number; owner: string; teamId?: string; projectId?: string };
+export type CloudSession = { token: string; refreshToken?: string; expiresAt: number | null; owner: string; teamId?: string; projectId?: string };
 export type CloudProject = { id: string; name: string; region?: string; status?: string; framework?: string | null };
 export type CloudOverview = { project: CloudProject; deployment?: { id: string; state: string; createdAt: number } | null; checkedAt: string };
 

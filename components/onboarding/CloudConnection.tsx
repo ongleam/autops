@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { CloudOverview, CloudProject, Provider } from "@/lib/cloud/client";
 
-type Connection = { configured: boolean; connected: boolean; project: CloudProject | null };
+type Connection = { configured: boolean; connected: boolean; status?: string; project: CloudProject | null };
 type Props = { provider: Provider; enabled: boolean };
 const LABELS = { vercel: "Vercel", supabase: "Supabase" };
 const CALLBACK_MESSAGES: Record<string, string> = {
@@ -12,6 +12,7 @@ const CALLBACK_MESSAGES: Record<string, string> = {
   invalid_oauth_state: "The authorization request expired or did not match. Reconnect to continue.",
   access_denied: "Connection canceled. Reconnect when you are ready.",
   authorization_failed: "Authorization failed. Please reconnect.",
+  storage_unavailable: "Authorization could not be saved. Check again before retrying the connection.",
 };
 
 async function getConnection(provider: Provider, signal?: AbortSignal) {
@@ -118,7 +119,7 @@ export default function CloudConnection({ provider, enabled }: Props) {
       setProjects([]);
       setSelected("");
       setOverview(null);
-      setNotice(`Disconnected this browser. Revoke account permissions in ${name} settings.`);
+      setNotice(`Disconnected ${name} from your autops account. Revoke provider permissions in ${name} settings if needed.`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Please try again."); }
     finally { setBusy(false); }
   }

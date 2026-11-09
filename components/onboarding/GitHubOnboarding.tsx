@@ -135,7 +135,7 @@ export default function GitHubOnboarding() {
       </section>
       <CloudConnection key={`vercel-${connection?.user?.id ?? "guest"}`} provider="vercel" enabled={Boolean(connection?.user)} />
       <CloudConnection key={`supabase-${connection?.user?.id ?? "guest"}`} provider="supabase" enabled={Boolean(connection?.user)} />
-      <footer className="text-center text-[12px] text-[#71717a] my-6.5 mx-0 [&_strong]:font-medium [&_strong]:text-[#52525b] [&_p]:leading-[1.9] max-[600px]:text-[11px]"><strong>Connecting does not start code changes or deployments.</strong><p>Connections are stored in a protected browser session. Reauthenticate when the token expires or after a maximum of eight hours.<br />Revoke app permissions in each service settings.</p></footer>
+      <footer className="text-center text-[12px] text-[#71717a] my-6.5 mx-0 [&_strong]:font-medium [&_strong]:text-[#52525b] [&_p]:leading-[1.9] max-[600px]:text-[11px]"><strong>Connecting does not start code changes or deployments.</strong><p>Cloud connections are encrypted on the server and linked to your GitHub account. Signing in again keeps them available. Expiring Supabase access tokens are refreshed automatically.<br />Revoke app permissions in each service settings.</p></footer>
     </main>
   );
 }

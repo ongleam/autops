@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import Logo from "@/components/Logo";
-import { getConsent, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE } from "@/lib/mcp/oauth";
+import { getConsent, CLOUD_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE } from "@/lib/mcp/oauth";
 
 export const instant = false;
 export const metadata = { title: "Connect ChatGPT account — autops", referrer: "same-origin" };
@@ -16,7 +16,8 @@ export default async function ChatGPTConsent({ searchParams }: { searchParams: P
       {flow.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE)
         ? <p className="mt-4 leading-8 font-semibold">Allow reviewed source-file updates on the selected repository’s default branch. Each write requires the current file SHA and creates a GitHub commit. Commits may trigger your existing deployment pipeline. No workflow, credential or hidden files can be edited.</p>
         : <p className="mt-4 leading-8">Code changes are not authorized by this connection.</p>}
-      <p className="mt-4 leading-8">Vercel and Supabase web connections are separate and are not included. No direct deployment permission is granted. This connection expires after one hour and can be reauthorized.</p>
+      {flow.scope.split(" ").includes(CLOUD_SCOPE) && <p className="mt-4 leading-8">Allow ChatGPT to validate the Vercel and Supabase connections saved to this GitHub account, including accessible projects, selected project, connection status, and recent project server logs requested for diagnosis. Provider tokens remain encrypted on the server and are never returned to ChatGPT.</p>}
+      <p className="mt-4 leading-8"> No direct deployment permission is granted. This connection expires after one hour and can be reauthorized.</p>
       <form action="/oauth/authorize" method="POST" className="mt-8 flex gap-4">
         <input type="hidden" name="flow" value={value} />
         <button type="submit" name="decision" value="allow" className="rounded-lg bg-[#2e4030] px-5 py-3 text-white">Authorize with GitHub</button>

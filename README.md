@@ -5,7 +5,7 @@ autops는 서비스의 코드와 연결 상태를 살펴보고, AI와 함께 개
 ## 구성과 사용 흐름
 
 1. 웹사이트에서 GitHub로 로그인하고 GitHub App이 접근할 저장소를 선택합니다.
-2. 필요하면 Vercel 또는 Supabase 프로젝트를 각각 연결해 기본 상태를 조회합니다. 이 웹 연결은 ChatGPT MCP 연결과 별개입니다.
+2. 필요하면 Vercel 또는 Supabase 프로젝트를 각각 연결해 기본 상태를 조회합니다. 연결은 GitHub 사용자별로 서버에 저장되며 cloud.read를 승인한 MCP에서 같은 계정으로 사용합니다.
 3. ChatGPT에서 autops 플러그인을 OAuth로 연결하고 계정·저장소 접근을 승인합니다.
 4. MCP 도구로 저장소 파일을 읽거나, 지원되는 공개 데모의 상품 API를 진단합니다. 결과를 검토한 뒤 다음 확인을 반복합니다.
 
@@ -103,14 +103,14 @@ Supabase 조직 설정의 [Platform OAuth Apps](https://supabase.com/docs/guides
 - PKCE S256과 사용자·브라우저 세션에 묶인 state를 검증합니다.
 
 두 연결은 기존 `GITHUB_SESSION_SECRET`으로 암호화한 별도의 HttpOnly 쿠키에 저장합니다. GitHub 로그인 세션에 묶여 있으며 GitHub 연결 해제·계정 변경 후에는 사용할 수 없습니다.
-세션은 공급자 access token 만료 또는 최대 8시간까지만 유지합니다. Refresh token은 저장하지 않으며 만료 후 다시 승인합니다.
+클라우드 access/refresh token과 선택 프로젝트는 GitHub 사용자 ID별로 AES-256-GCM 암호화하여 서버 Supabase 저장소에 보관합니다. SUPABASE_URL과 서버 전용 SUPABASE_SECRET_KEY가 필요하며 마이그레이션은 supabase/migrations에 있습니다. Vercel Integration의 무기한 토큰은 임의로 8시간 뒤 만료시키지 않습니다. Supabase 토큰은 만료 전에 갱신하고 갱신 토큰 회전을 저장합니다. 철회된 권한만 재승인을 요구하며 일시 장애는 저장된 연결을 삭제하지 않습니다.
 서버 DB·백그라운드 실행·MCP 인증은 추가하지 않습니다. 공개 MCP에는 이 연결 정보와 사용자별 조회 결과가 노출되지 않습니다.
-연결 해제는 이 브라우저의 쿠키만 지웁니다. 공급자의 앱 설치·권한 철회는 각 서비스 설정에서 진행합니다.
+클라우드 연결 해제는 현재 GitHub 사용자에 저장된 해당 공급자 연결을 서버에서 삭제합니다. 공급자의 앱 설치·권한 철회는 각 서비스 설정에서 진행합니다.
 
 `/api/cloud/{vercel|supabase}`의 경로:
 
 - `GET /start`, `GET /callback`: OAuth 시작·완료.
-- `GET /session`, `DELETE /session`: 연결 상태 확인·브라우저 연결 해제.
+- `GET /session`, `DELETE /session`: 연결 상태 확인·사용자별 서버 연결 해제.
 - `GET /projects`: 현재 토큰으로 접근할 수 있는 프로젝트 목록.
 - `POST /selection`: 공급자 목록에서 권한을 재확인한 프로젝트 ID 선택.
 - `GET /overview`: 선택한 프로젝트를 공급자에서 다시 조회. 외부 프로젝트 API는 모두 GET만 사용합니다.
@@ -125,7 +125,7 @@ API 응답은 필요한 필드만 포함하며 토큰·원본 공급자 오류�
 [autops 플러그인 SSOT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184)는 OAuth와 동적 클라이언트 등록(DCR)을 사용합니다. 서버 주소는 `https://autops-app.vercel.app/api/mcp`입니다. 중복 Auto Ops·autops diagnostics·패키지형 autops 연결은 사용하지 않습니다.
 로그인은 GitHub만 사용합니다. 이전 이메일 로그인·가입·세션 API와 관련 Supabase Auth 설정은 제거했습니다. Supabase Platform OAuth 연결은 유지합니다.
 `accounts.read`는 계정·허용 저장소 목록, `repository.read`는 선택한 저장소의 소스 읽기, `repository.write`는 기존 소스 파일 수정에 사용합니다. 쓰기는 read와 write를 모두 승인해야 합니다. 기존 읽기 전용 토큰의 권한은 자동으로 확대되지 않습니다.
-온보딩에서 저장소를 선택한 뒤 ChatGPT에서 기존 autops 플러그인을 새로고침하고 요청된 OAuth 범위를 승인합니다. 연결은 최대 1시간 유지하며 PKCE S256·리디렉션 주소·state·issuer·audience와 실제 GitHub 계정을 검증합니다. Vercel·Supabase 웹 세션은 MCP로 전달하지 않습니다.
+온보딩에서 저장소를 선택한 뒤 ChatGPT에서 기존 autops 플러그인을 새로고침하고 요청된 OAuth 범위를 승인합니다. 연결은 최대 1시간 유지하며 PKCE S256·리디렉션 주소·state·issuer·audience와 실제 GitHub 계정을 검증합니다. cloud.read를 승인하면 get_cloud_projects와 get_project_logs가 인증된 GitHub 사용자의 서버 저장 연결을 사용합니다. 프로젝트 접근 권한은 매번 공급자에서 검증합니다. 로그는 최근 최대 60분·100건으로 제한하며 Vercel runtime과 Supabase 서비스 로그를 조회합니다. 공급자의 로그 권한·보존 기간에 따라 조회가 제한될 수 있습니다. 토큰은 MCP 응답에 포함하지 않습니다.
 배포 후 기존 플러그인에서 `get_connected_accounts` → `get_project_context` → `get_repository_file`(`lib/products.ts`) → `diagnose_project`를 실제 호출해 확인합니다. 서버 직접 호출만으로 플러그인 검증 성공을 보고하지 않습니다.
 
 인증 없는 프로젝트 맥락은 공개 데모임을 명시합니다. 인증하면 선택한 저장소의 맥락을 반환합니다. 소스 읽기·수정은 OAuth 선택 저장소에만 허용되며 사용자·저장소·App 설치 접근 권한을 매 요청마다 검증합니다. 경로는 100 KB 이하 UTF-8 소스 파일로 제한하며 숨김 경로·워크플로·비밀 파일·경로 순회를 허용하지 않습니다.

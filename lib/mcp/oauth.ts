@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod/v4";
+import { getCloudConnectionStatus } from "../cloud/connections";
 import { createSession, getSession, getCookieName, type GitHubSession } from "../github/session";
 import { createGitHubClient } from "../github/client";
 import { MCP_URL } from "../projects/context";
@@ -8,9 +9,10 @@ import type { RepositoryConnection } from "../github/selected-repository";
 
 export const ISSUER = new URL(MCP_URL).origin;
 export const ACCOUNT_SCOPE = "accounts.read";
+export const CLOUD_SCOPE = "cloud.read";
 export const REPOSITORY_READ_SCOPE = "repository.read";
 export const REPOSITORY_WRITE_SCOPE = "repository.write";
-const SCOPES = [ACCOUNT_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
+const SCOPES = [ACCOUNT_SCOPE, CLOUD_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
 const scopeSchema = z.string().refine((value) => {
   const scopes = value.split(" ");
   return scopes.includes(ACCOUNT_SCOPE) && scopes.every((scope) => SCOPES.includes(scope)) &&
@@ -188,7 +190,15 @@ function getAccess(request: Request | undefined) {
 }
 
 export class McpAuthorizationError extends Error {
-  constructor(public scope: string) { super("Connect or reauthorize autops with the requested repository permissions."); }
+  constructor(public scope: string) { super("Connect or reauthorize autops with the requested account and repository permissions."); }
+}
+
+export async function getCloudOwner(request: Request | undefined) {
+  const access = getAccess(request);
+  if (!access || !access.scope.split(" ").includes(CLOUD_SCOPE)) throw new McpAuthorizationError(`${ACCOUNT_SCOPE} ${CLOUD_SCOPE}`);
+  const user = await createGitHubClient(access.token).getUser();
+  if (user.id !== access.userId) throw new McpAuthorizationError(`${ACCOUNT_SCOPE} ${CLOUD_SCOPE}`);
+  return String(user.id);
 }
 
 export async function getRepositoryConnection(request: Request | undefined, requiredScope = REPOSITORY_READ_SCOPE): Promise<RepositoryConnection> {
@@ -217,5 +227,7 @@ export async function getConnectedAccounts(request: Request | undefined) {
   return { github: { connected: true, user, repository: repositories.find((repo) => repo.id === access.repositoryId) ?? null, repositories },
     permissions: { repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
     checkedAt: new Date().toISOString(),
-    cloudAccounts: { status: "not_shared", message: "Vercel and Supabase browser connections are separate and are not shared with this MCP authorization." } };
+    cloudAccounts: access.scope.split(" ").includes(CLOUD_SCOPE)
+      ? { status: "checked", vercel: await getCloudConnectionStatus(String(user.id), "vercel"), supabase: await getCloudConnectionStatus(String(user.id), "supabase") }
+      : { status: "authorization_required", requiredScope: CLOUD_SCOPE } };
 }

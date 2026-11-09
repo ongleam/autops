@@ -28,7 +28,7 @@ export function getProjectContext(repository?: Repository) {
       scheduling: false,
     },
     authorization: "Source reads require repository.read; updates require repository.write. get_connected_accounts reports the granted scopes. Public demo context is not proof of a user connection.",
-    storage: "OAuth credentials are encrypted in the short-lived access token; no connection database is used.",
+    storage: "OAuth credentials are encrypted in the short-lived access token; cloud connections are encrypted in a server database and keyed by verified GitHub user ID.",
     prompt: MAINTENANCE_PROMPT,
   };
 }
@@ -50,6 +50,8 @@ export function getConnectionInstructions() {
     verification: "Copying the URL or reading instructions does not verify a connection. Confirm it with an actual MCP tool call.",
     availableTools: [
       "get_connected_accounts",
+      "get_cloud_projects",
+      "get_project_logs",
       "get_project_context",
       "get_connection_instructions",
       "get_maintenance_prompt",
@@ -60,7 +62,7 @@ export function getConnectionInstructions() {
     limitations: [
       "Live API diagnostics support only the selected compiled-ex-project demo. Other selected repositories support source reads and authorized file updates, not live API metrics.",
       "Writes commit an existing source file to the selected default branch; they do not run tests or confirm deployment. No direct deployment or scheduling tools are provided.",
-      "Vercel and Supabase browser connections are separate from MCP OAuth. No cloud credentials are shared.",
+      "Cloud project and log tools require cloud.read consent and use the same GitHub user's encrypted server connection. Credentials are never returned. Provider permissions and retention apply.",
       "Do not enter passwords, API keys, or tokens into this server.",
     ],
   };
