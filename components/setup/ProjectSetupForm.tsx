@@ -36,10 +36,9 @@ function restoredSettings(value: unknown): ProjectSettings | null {
 type Props = {
   settings: ProjectSettings;
   onChange: (settings: ProjectSettings) => void;
-  onSaved: () => void;
 };
 
-export default function ProjectSetupForm({ settings, onChange, onSaved }: Props) {
+export default function ProjectSetupForm({ settings, onChange }: Props) {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
 
@@ -82,7 +81,6 @@ export default function ProjectSetupForm({ settings, onChange, onSaved }: Props)
       onChange(next);
       setError("");
       setStatus("이 브라우저에 저장했어요. 다음으로 MCP 연결 안내를 확인해주세요.");
-      onSaved();
     } catch {
       setError("브라우저에 저장하지 못했어요. 저장소 접근을 허용하거나 다른 브라우저를 사용해주세요.");
     }
