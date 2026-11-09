@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import McpConnectionSteps from "./McpConnectionSteps";
 import { DEMO_PROJECT, type ProjectSettings } from "./types";
-import styles from "./ConnectionGuide.module.css";
 
 type Props = {
   settings: ProjectSettings;
@@ -67,34 +66,34 @@ ${projectData}
   }
 
   return (
-    <div className={styles.guide}>
-      <section id="mcp" className={styles.card} aria-labelledby="mcp-title">
-        <header className={styles.heading}>
-          <span className={styles.step}>02</span>
+    <div className="grid gap-5.5 min-w-0">
+      <section id="mcp" className="bg-white border border-solid border-[var(--line,#e4e4e7)] rounded-[7px] p-7 min-w-0 scroll-mt-6 max-[640px]:py-5.5 max-[640px]:px-[19px]" aria-labelledby="mcp-title">
+        <header className="flex items-center gap-[13px] flex-wrap [&_h2]:text-[19px] [&_h2]:tracking-[-.6px] [&_h2]:leading-[1.4] [&_h2]:m-0 [&_h2]:font-semibold max-[640px]:gap-2.5 max-[640px]:[&_h2]:text-[17px]">
+          <span className="grid place-items-center shrink-0 w-9.5 h-9.5 rounded-[5px] bg-[#f4f4f5] text-[#52525b] text-[13px] font-semibold">02</span>
           <div>
-            <p className={styles.eyebrow}>MCP CONNECTION</p>
+            <p className="text-[#71717a] text-[10px] tracking-[1.5px] mt-0 mx-0 mb-1.5 font-semibold">MCP CONNECTION</p>
             <h2 id="mcp-title">MCP 연결</h2>
           </div>
-          <span className={styles.badge}>{serverReady ? "MCP 서버 제공 중" : "서버 확인 전"}</span>
+          <span className="ml-auto text-[11px] text-[#71717a] bg-[#f4f4f5] py-1.5 px-[9px] rounded-[5px] whitespace-nowrap max-[640px]:ml-12 max-[640px]:mt-[-4px]">{serverReady ? "MCP 서버 제공 중" : "서버 확인 전"}</span>
         </header>
-        <p className={styles.description}>
+        <p className="text-[13px] leading-[1.9] text-[#71717a] mt-5 mx-0 mb-5.5 max-[640px]:text-[12px]">
           {serverReady ? "아래 주소를 ChatGPT에 등록해주세요. 프로젝트 확인과 연결 안내 도구부터 사용할 수 있어요." : "연결 주소를 준비했어요. 서버 제공 여부를 확인한 뒤 ChatGPT에 등록해주세요."}
         </p>
-        <label className={styles.label} htmlFor="mcp-address">MCP 연결 주소</label>
-        <div className={styles.copyRow}>
+        <label className="block text-[13px] font-semibold mt-0 mx-0 mb-[9px] text-[#27272a]" htmlFor="mcp-address">MCP 연결 주소</label>
+        <div className="flex gap-[9px] items-stretch max-[640px]:flex-col">
           <input
             id="mcp-address"
             ref={addressRef}
-            className={styles.address}
+            className="w-full min-w-0 border border-solid border-[#e4e4e7] rounded-[7px] p-3 bg-[#fafafa] text-[12px] [font-family:monospace] text-[#52525b] leading-[1.6] focus-visible:outline-[2px] focus-visible:outline-solid focus-visible:outline-[#52525b] focus-visible:outline-offset-[3px] max-[640px]:text-[12px]"
             readOnly
             value={mcpUrl || "주소 확인 중…"}
             spellCheck={false}
           />
-          <button type="button" className={styles.copyButton} onClick={copyAddress} disabled={!mcpUrl}>
+          <button type="button" className="border border-solid border-[#e4e4e7] rounded-[7px] py-3 px-4 inline-flex gap-[15px] items-center justify-center whitespace-nowrap text-[12px] font-semibold min-h-[43px] bg-[#f4f4f5] text-[#52525b] shrink-0 hover:bg-[#e4e4e7] disabled:opacity-50 disabled:cursor-wait max-[640px]:self-start" onClick={copyAddress} disabled={!mcpUrl}>
             주소 복사
           </button>
         </div>
-        <p className={styles.copyStatus} role="status">
+        <p className="text-[11px] text-[#71717a] leading-[1.7] min-h-[19px] mt-2 mx-0 mb-0" role="status">
           {addressCopy?.value === mcpUrl
             ? addressCopy.manual
               ? "자동 복사가 어려워 주소를 선택했어요. 직접 복사해주세요."
@@ -102,44 +101,44 @@ ${projectData}
             : "주소를 복사해도 자동으로 연결되지는 않아요."}
         </p>
         <McpConnectionSteps />
-        <div className={styles.notice}>
+        <div className="flex items-start gap-2 bg-[#fafafa] rounded-[7px] p-3 mt-[21px] text-[#71717a] [&>span]:text-[14px] [&_p]:m-0 [&_p]:text-[11px] [&_p]:leading-[1.8]">
           <span aria-hidden="true">ⓘ</span>
           <p>{serverReady ? "계정 조회는 OAuth 인증 후 사용할 수 있어요. 공개 데모의 소스 읽기와 API 진단은 인증 없이 사용할 수 있어요. CPU·메모리 계측과 코드 변경은 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
         </div>
       </section>
 
-      <section id="schedule" className={styles.card} aria-labelledby="schedule-title">
-        <header className={styles.heading}>
-          <span className={styles.step}>03</span>
+      <section id="schedule" className="bg-white border border-solid border-[var(--line,#e4e4e7)] rounded-[7px] p-7 min-w-0 scroll-mt-6 max-[640px]:py-5.5 max-[640px]:px-[19px]" aria-labelledby="schedule-title">
+        <header className="flex items-center gap-[13px] flex-wrap [&_h2]:text-[19px] [&_h2]:tracking-[-.6px] [&_h2]:leading-[1.4] [&_h2]:m-0 [&_h2]:font-semibold max-[640px]:gap-2.5 max-[640px]:[&_h2]:text-[17px]">
+          <span className="grid place-items-center shrink-0 w-9.5 h-9.5 rounded-[5px] bg-[#f4f4f5] text-[#52525b] text-[13px] font-semibold">03</span>
           <div>
-            <p className={styles.eyebrow}>MAINTENANCE</p>
+            <p className="text-[#71717a] text-[10px] tracking-[1.5px] mt-0 mx-0 mb-1.5 font-semibold">MAINTENANCE</p>
             <h2 id="schedule-title">점검 프롬프트</h2>
           </div>
         </header>
-        <p className={styles.description}>
+        <p className="text-[13px] leading-[1.9] text-[#71717a] mt-5 mx-0 mb-5.5 max-[640px]:text-[12px]">
           프로젝트 설정이 아래 프롬프트에 반영돼요. 실제 도구와 권한을 먼저 확인하도록 작성했어요.
         </p>
-        <details ref={promptDetailsRef} className={styles.promptDetails}>
+        <details ref={promptDetailsRef} className="mt-4 [&_summary]:text-[12px] [&_summary]:text-[#52525b] [&_summary]:cursor-pointer [&_summary]:py-2 [&_summary]:px-0 [&[open]_summary]:mb-3">
           <summary>프롬프트 내용 보기</summary>
-          <label className={styles.label} htmlFor="maintenance-prompt">점검·개선 요청 프롬프트</label>
-          <textarea id="maintenance-prompt" ref={promptRef} className={styles.prompt} value={prompt} readOnly rows={7} spellCheck={false} />
+          <label className="block text-[13px] font-semibold mt-0 mx-0 mb-[9px] text-[#27272a]" htmlFor="maintenance-prompt">점검·개선 요청 프롬프트</label>
+          <textarea id="maintenance-prompt" ref={promptRef} className="block w-full min-w-0 resize-y border border-solid border-[#e4e4e7] rounded-[5px] bg-[#fafafa] text-[#52525b] text-[12px] leading-[1.9] font-sans p-4 min-h-47.5 max-h-125 focus-visible:outline-[2px] focus-visible:outline-solid focus-visible:outline-[#52525b] focus-visible:outline-offset-[3px] max-[640px]:p-[13px] max-[640px]:text-[12px]" value={prompt} readOnly rows={7} spellCheck={false} />
         </details>
-        <div className={styles.actions}>
-          <button type="button" className={styles.primaryButton} onClick={copyPrompt}>
+        <div className="flex items-center gap-5.5 mt-4 flex-wrap max-[640px]:gap-[17px]">
+          <button type="button" className="border border-solid border-[#2563eb] rounded-[7px] py-3 px-4 inline-flex gap-[15px] items-center justify-center whitespace-nowrap text-[12px] font-semibold min-h-[43px] bg-[#2563eb] text-white hover:bg-[#1d4ed8]" onClick={copyPrompt}>
             프롬프트 복사 <span aria-hidden="true">→</span>
           </button>
-          <a href="https://chatgpt.com" target="_blank" rel="noreferrer" className={styles.chatLink}>
+          <a href="https://chatgpt.com" target="_blank" rel="noreferrer" className="text-[12px] font-semibold text-[#52525b] inline-flex items-center gap-2.5 py-2.5 px-0">
             ChatGPT 열기
           </a>
         </div>
-        <p className={styles.copyStatus} role="status">
+        <p className="text-[11px] text-[#71717a] leading-[1.7] min-h-[19px] mt-2 mx-0 mb-0" role="status">
           {promptCopy?.value === prompt
             ? promptCopy.manual
               ? "자동 복사가 어려워 프롬프트를 선택했어요. 직접 복사해주세요."
               : "프롬프트를 복사했어요. ChatGPT에 붙여넣어주세요."
             : "복사한 뒤 ChatGPT에 붙여넣어 다음 단계를 진행해주세요."}
         </p>
-        <div className={styles.scheduleNote}>
+        <div className="border-t border-solid border-t-[#f4f4f5] mt-5.5 pt-5 [&_strong]:text-[12px] [&_strong]:font-semibold [&_strong]:text-[#52525b] [&_p]:text-[12px] [&_p]:leading-[1.9] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[640px]:[&_p]:text-[11px]">
           <strong>예약은 ChatGPT에서 마무리해주세요</strong>
           <p>연결과 도구 동작을 확인한 뒤 실행 시각과 시간대를 지정해 등록해주세요. 프롬프트 복사는 예약 등록이나 실행을 의미하지 않아요.</p>
         </div>

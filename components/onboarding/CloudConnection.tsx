@@ -123,26 +123,26 @@ export default function CloudConnection({ provider, enabled }: Props) {
   }
 
   return (
-    <section className="gh-card cloud-card" aria-labelledby={`${provider}-title`} aria-busy={enabled && (loading || busy)}>
-      <div className="gh-title"><span className="gh-icon" aria-hidden="true">{provider === "vercel" ? "▲" : "ϟ"}</span><div><h2 id={`${provider}-title`}>{name} 프로젝트 연결</h2><p>{provider === "vercel" ? "프로젝트와 최근 배포 상태를 읽기 전용으로 조회해요." : "프로젝트 이름, 리전과 상태를 읽기 전용으로 조회해요."}</p></div></div>
-      {!enabled ? <p className="gh-empty">GitHub 계정을 먼저 연결해주세요.</p> : loading ? <p role="status">연결 상태를 확인하고 있어요…</p> : !connection ? <p>연결 상태를 다시 확인해주세요.</p> : !connection.configured ? (
-        <div className="gh-empty"><strong>{name} 연결을 준비하고 있어요</strong><p>관리자가 서비스 연결 설정을 완료하면 사용할 수 있어요.</p><button type="button" className="button secondary" onClick={refresh}>설정 다시 확인</button></div>
+    <section className="bg-white border border-solid border-[var(--line)] rounded-[7px] p-8 shadow-[0_12px_36px_#18181b06] max-[600px]:py-[23px] max-[600px]:px-4.5 mt-6" aria-labelledby={`${provider}-title`} aria-busy={enabled && (loading || busy)}>
+      <div className="flex gap-[15px] items-center mb-7 [&_h2]:m-0 [&_h2]:text-[20px] [&_h2]:tracking-[-.6px] [&_p]:text-[12px] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[600px]:[&_h2]:text-[18px]"><span className="grid place-items-center w-12 h-12 rounded-[12px] bg-[#f4f4f5] text-[28px] text-[#52525b]" aria-hidden="true">{provider === "vercel" ? "▲" : "ϟ"}</span><div><h2 id={`${provider}-title`}>{name} 프로젝트 연결</h2><p>{provider === "vercel" ? "프로젝트와 최근 배포 상태를 읽기 전용으로 조회해요." : "프로젝트 이름, 리전과 상태를 읽기 전용으로 조회해요."}</p></div></div>
+      {!enabled ? <p className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6">GitHub 계정을 먼저 연결해주세요.</p> : loading ? <p role="status">연결 상태를 확인하고 있어요…</p> : !connection ? <p>연결 상태를 다시 확인해주세요.</p> : !connection.configured ? (
+        <div className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6"><strong>{name} 연결을 준비하고 있어요</strong><p>관리자가 서비스 연결 설정을 완료하면 사용할 수 있어요.</p><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#d4d4d8] bg-white rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#f4f4f5]" onClick={refresh}>설정 다시 확인</button></div>
       ) : !connection.connected ? (
-        <div className="gh-empty"><p>{name}에서 권한을 승인하고 조회할 프로젝트를 선택해주세요.</p><button type="button" className="button primary" onClick={() => window.location.assign(new URL(`${base}/start`, window.location.origin).href)}>{name} 연결하기 ↗</button></div>
+        <div className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6"><p>{name}에서 권한을 승인하고 조회할 프로젝트를 선택해주세요.</p><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#3f3f46] text-white" onClick={() => window.location.assign(new URL(`${base}/start`, window.location.origin).href)}>{name} 연결하기 ↗</button></div>
       ) : (
         <>
-          <div className="gh-account"><span>{name} 권한 승인됨</span><button type="button" onClick={disconnect} disabled={busy}>연결 해제</button></div>
+          <div className="border-t border-solid border-t-[var(--line)] py-4.5 px-0 flex justify-between items-center gap-3 text-[12px] text-[#71717a] [&_strong]:text-[#27272a] [&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] max-[600px]:items-start"><span>{name} 권한 승인됨</span><button type="button" onClick={disconnect} disabled={busy}>연결 해제</button></div>
           <form onSubmit={save}>
-            <div className="gh-repositoryHeading"><label htmlFor={`${provider}-project`}>조회할 프로젝트</label><button type="button" onClick={refresh} disabled={busy}>목록 새로고침 ↻</button></div>
-            <select className="gh-search" id={`${provider}-project`} value={selected} onChange={(event) => setSelected(event.target.value)} disabled={busy} required>
+            <div className="[&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] flex justify-between items-center gap-2.5 my-4 mx-0 font-semibold text-[13px] [&_button]:font-normal [&_button]:text-[#71717a]"><label htmlFor={`${provider}-project`}>조회할 프로젝트</label><button type="button" onClick={refresh} disabled={busy}>목록 새로고침 ↻</button></div>
+            <select className="w-full bg-[#fafafa] border border-solid border-[#e4e4e7] rounded-[6px] p-[13px] [font:inherit] focus-visible:outline-[2px] focus-visible:outline-solid focus-visible:outline-[#52525b] focus-visible:outline-offset-[2px]" id={`${provider}-project`} value={selected} onChange={(event) => setSelected(event.target.value)} disabled={busy} required>
               <option value="">프로젝트를 선택해주세요</option>
               {projects.map((project) => <option key={project.id} value={project.id}>{project.name} · {project.id}</option>)}
             </select>
-            {!projects.length && <p className="gh-empty">접근할 수 있는 프로젝트가 없어요. 서비스의 프로젝트 접근 권한을 확인해주세요.</p>}
-            <div className="gh-actions"><button type="submit" className="button primary" disabled={!selected || busy}>이 프로젝트 선택하기</button></div>
+            {!projects.length && <p className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6">접근할 수 있는 프로젝트가 없어요. 서비스의 프로젝트 접근 권한을 확인해주세요.</p>}
+            <div className="flex gap-4 items-center justify-between mt-5.5 max-[600px]:items-stretch max-[600px]:flex-col"><button type="submit" className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#3f3f46] text-white" disabled={!selected || busy}>이 프로젝트 선택하기</button></div>
           </form>
-          {connection.project && <div className="gh-connected"><strong>✓ {connection.project.name}</strong><span>{connection.project.id}</span><button type="button" className="button secondary" onClick={getOverview} disabled={busy}>프로젝트 상태 조회 ↻</button></div>}
-          {overview && <div className="cloud-overview" role="status"><dl>
+          {connection.project && <div className="bg-[#f4f4f5] border border-solid border-[#e4e4e7] rounded-[5px] p-4.5 mt-6 mx-0 mb-6 flex items-start flex-col gap-2.5 [overflow-wrap:anywhere] [&_span]:text-[12px] [&_span]:text-[#52525b] [&_a]:mt-2"><strong>✓ {connection.project.name}</strong><span>{connection.project.id}</span><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#d4d4d8] bg-white rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#f4f4f5]" onClick={getOverview} disabled={busy}>프로젝트 상태 조회 ↻</button></div>}
+          {overview && <div className="text-[13px] border-t border-solid border-t-[var(--line)] pt-4 [&_dl]:grid [&_dl]:grid-cols-[90px_minmax(0,1fr)] [&_dl]:gap-3 [&_dt]:text-[#71717a] [&_dd]:m-0 [&_dd]:[overflow-wrap:anywhere]" role="status"><dl>
             <dt>프로젝트</dt><dd>{overview.project.name}</dd>
             {overview.project.framework !== undefined && <><dt>프레임워크</dt><dd>{overview.project.framework ?? "설정 없음"}</dd></>}
             {overview.project.region && <><dt>리전</dt><dd>{overview.project.region}</dd></>}
@@ -152,8 +152,8 @@ export default function CloudConnection({ provider, enabled }: Props) {
           </dl></div>}
         </>
       )}
-      {enabled && error && <div className="gh-error" role="alert">{error}<button type="button" onClick={refresh} disabled={loading || busy}>연결 다시 확인</button><button type="button" onClick={() => window.location.assign(new URL(`${base}/start`, window.location.origin).href)} disabled={loading || busy}>{name} 다시 연결</button></div>}
-      {enabled && <p className="gh-notice" role="status" aria-live="polite">{notice}</p>}
+      {enabled && error && <div className="[&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] p-4 mt-5 bg-[#f4f4f5] text-[#b91c1c] rounded-[6px] text-[13px] leading-[1.8] [&_button]:block [&_button]:mt-2 [&_button]:text-inherit [&_button]:p-0" role="alert">{error}<button type="button" onClick={refresh} disabled={loading || busy}>연결 다시 확인</button><button type="button" onClick={() => window.location.assign(new URL(`${base}/start`, window.location.origin).href)} disabled={loading || busy}>{name} 다시 연결</button></div>}
+      {enabled && <p className="mt-4 mx-0 mb-0 text-[12px] text-[#52525b] leading-[1.8] empty:hidden" role="status" aria-live="polite">{notice}</p>}
     </section>
   );
 }
