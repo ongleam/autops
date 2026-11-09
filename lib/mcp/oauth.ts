@@ -13,12 +13,15 @@ export const CLOUD_SCOPE = "cloud.read";
 export const REPOSITORY_READ_SCOPE = "repository.read";
 export const REPOSITORY_WRITE_SCOPE = "repository.write";
 const SCOPES = [ACCOUNT_SCOPE, CLOUD_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
-const scopeSchema = z.string().refine((value) => {
+const scopeSchema = z.string().max(256).refine((value) => {
   const scopes = value.split(" ");
   return scopes.includes(ACCOUNT_SCOPE) && scopes.every((scope) => SCOPES.includes(scope)) &&
     (!scopes.includes(REPOSITORY_WRITE_SCOPE) || scopes.includes(REPOSITORY_READ_SCOPE));
 });
 const FLOW_COOKIE = "__Host-autops-mcp-flow";
+const PENDING_COOKIE = "__Host-autops-mcp-pending";
+const pendingSchema = z.object({ query: z.string().max(4096) });
+export const MCP_PENDING_COOKIE = PENDING_COOKIE;
 const clientSchema = z.object({ redirectUris: z.array(z.string()).min(1).max(5) });
 const flowSchema = z.object({
   clientId: z.string(), redirectUri: z.string(), challenge: z.string(), state: z.string(), nonce: z.string(),
@@ -105,11 +108,24 @@ export function getConsent(flowValue: string | undefined, cookies: { get(name: s
   return flow && flow.nonce === cookies.get(`${FLOW_COOKIE}-${flow.nonce}`)?.value ? flow : null;
 }
 export const MCP_FLOW_COOKIE = FLOW_COOKIE;
+export function hasPendingMcpAuthorization(value: string | undefined) {
+  return Boolean(value && decode(value, "pending", pendingSchema));
+}
 
 export async function handleOAuth(request: NextRequest, action: string) {
   try {
     const cfg = config();
     if (request.nextUrl.origin !== ISSUER) return json({ error: "invalid_request" }, 400);
+    if (action === "resume" && request.method === "GET") {
+      const pending = decode(request.cookies.get(PENDING_COOKIE)?.value, "pending", pendingSchema);
+      const target = new URL(pending ? "/oauth/authorize" : "/onboarding", ISSUER);
+      if (pending) target.search = pending.query;
+      const response = NextResponse.redirect(target, 303);
+      response.cookies.set(PENDING_COOKIE, "", { secure: true, httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
+      response.headers.set("Cache-Control", "no-store");
+      response.headers.set("Referrer-Policy", "no-referrer");
+      return response;
+    }
     if (action === "register" && request.method === "POST") {
       const body = await request.text();
       if (body.length > 8192) return json({ error: "invalid_request" }, 400);
@@ -135,7 +151,16 @@ export async function handleOAuth(request: NextRequest, action: string) {
       const github = getSession<GitHubSession>(request.cookies.get(getCookieName("session"))?.value, cfg.secret);
       const valid = github && github.expiresAt > Math.floor(Date.now() / 1000) ? github : null;
       if (scope.data.includes(REPOSITORY_READ_SCOPE) && !valid?.repository) {
-        return json({ error: "invalid_request", error_description: "Sign in with GitHub and select a repository on autops before connecting repository tools." }, 400);
+        const query = new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri, response_type: "code", state,
+          code_challenge: challenge, code_challenge_method: "S256", scope: scope.data, resource: MCP_URL }).toString();
+        const pending = encode({ query }, "pending", 600);
+        if (pending.length > 3800) return json({ error: "invalid_request" }, 400);
+        const response = NextResponse.redirect(new URL("/onboarding", ISSUER), 303);
+        response.cookies.set(PENDING_COOKIE, pending,
+          { secure: true, httpOnly: true, sameSite: "lax", path: "/", maxAge: 600 });
+        response.headers.set("Cache-Control", "no-store");
+        response.headers.set("Referrer-Policy", "no-referrer");
+        return response;
       }
       const flow: Flow = { clientId, redirectUri, challenge, state, nonce: randomBytes(32).toString("base64url"),
         ownerId: valid?.user.id ?? null, repositoryId: valid?.repository?.id ?? null, scope: scope.data, refreshAllowed: true };

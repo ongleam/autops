@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
-import { authorizationMetadata, handleOAuth, ISSUER, MCP_FLOW_COOKIE } from "../lib/mcp/oauth";
+import { authorizationMetadata, handleOAuth, ISSUER, MCP_FLOW_COOKIE, MCP_PENDING_COOKIE } from "../lib/mcp/oauth";
 import { createSession, getSession } from "../lib/github/session";
 
 const names = ["GITHUB_APP_CLIENT_ID", "GITHUB_APP_CLIENT_SECRET", "GITHUB_SESSION_SECRET"];
@@ -193,6 +193,34 @@ test("authorization rejects forged clients and missing S256 PKCE", async () => {
   expect((await authorize(clientId, { code_challenge: "" })).status).toBe(400);
   expect((await authorize(clientId, { code_challenge_method: "plain" })).status).toBe(400);
   expect((await authorize(clientId, { redirect_uri: "https://attacker.example/callback" })).status).toBe(400);
+});
+
+test("repository authorization resumes after onboarding without losing OAuth state", async () => {
+  const { client_id: clientId } = await (await register()).json();
+  const pending = await authorize(clientId, { scope: "accounts.read repository.read", ignored: "not-preserved" });
+  expect(pending.status).toBe(303);
+  expect(pending.headers.get("location")).toBe(`${ISSUER}/onboarding`);
+  const cookie = pending.cookies.get(MCP_PENDING_COOKIE);
+  expect(cookie.httpOnly).toBe(true);
+  expect(cookie.secure).toBe(true);
+  const resumed = await handleOAuth(new NextRequest(`${ISSUER}/oauth/resume`, {
+    headers: { cookie: `${cookie.name}=${cookie.value}` },
+  }), "resume");
+  const target = new URL(resumed.headers.get("location"));
+  expect(target.origin + target.pathname).toBe(`${ISSUER}/oauth/authorize`);
+  expect(target.searchParams.get("state")).toBe("test-state");
+  expect(target.searchParams.get("code_challenge")).toBe(challenge);
+  expect(target.searchParams.get("client_id")).toBe(clientId);
+  expect(target.searchParams.has("ignored")).toBe(false);
+  expect(resumed.cookies.get(MCP_PENDING_COOKIE).maxAge).toBe(0);
+});
+
+test("missing or forged pending authorization returns to onboarding", async () => {
+  for (const cookie of ["", `${MCP_PENDING_COOKIE}=forged`]) {
+    const response = await handleOAuth(new NextRequest(`${ISSUER}/oauth/resume`, { headers: { cookie } }), "resume");
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(`${ISSUER}/onboarding`);
+  }
 });
 
 test("denied consent returns bound state and issuer to the registered callback", async () => {

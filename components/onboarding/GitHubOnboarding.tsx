@@ -28,7 +28,7 @@ async function getConnection(signal?: AbortSignal) {
   return { connection: data as Connection, repositories: repositoriesData.repositories as Repository[], notice: "" };
 }
 
-export default function GitHubOnboarding() {
+export default function GitHubOnboarding({ resumeChatGPT = false }: { resumeChatGPT?: boolean }) {
   const [connection, setConnection] = useState<Connection | null>(null);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selected, setSelected] = useState("");
@@ -135,6 +135,11 @@ export default function GitHubOnboarding() {
       </section>
       <CloudConnection key={`vercel-${connection?.user?.id ?? "guest"}`} provider="vercel" enabled={Boolean(connection?.user)} />
       <CloudConnection key={`supabase-${connection?.user?.id ?? "guest"}`} provider="supabase" enabled={Boolean(connection?.user)} />
+      {resumeChatGPT && <section className="mt-6 rounded-lg border border-[var(--line)] bg-white p-6">
+        <h2 className="text-lg font-semibold">Continue your ChatGPT connection</h2>
+        <p className="mt-3 text-sm leading-7">{connection?.repository ? "Your repository is selected. Continue to review the requested permissions." : "Sign in with GitHub and select your repository above, then continue here."}</p>
+        {connection?.repository && <Link prefetch={false} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-[#18181b] px-5 text-sm text-white" href="/oauth/resume">Continue to ChatGPT authorization</Link>}
+      </section>}
       <footer className="text-center text-[12px] text-[#71717a] my-6.5 mx-0 [&_strong]:font-medium [&_strong]:text-[#52525b] [&_p]:leading-[1.9] max-[600px]:text-[11px]"><strong>Connecting does not start code changes or deployments.</strong><p>Cloud connections are encrypted on the server and linked to your GitHub account. Signing in again keeps them available. Expiring Supabase access tokens are refreshed automatically.<br />Revoke app permissions in each service settings.</p></footer>
     </main>
   );
