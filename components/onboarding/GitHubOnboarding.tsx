@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Repository } from "@/lib/github/session";
+import CloudConnection from "./CloudConnection";
 import "./github-onboarding.css";
 
 type Connection = { configured: boolean; user: { id: number; login: string } | null; repository: Repository | null };
@@ -108,7 +109,7 @@ export default function GitHubOnboarding() {
   return (
     <main className="gh-page">
       <header className="gh-header"><Link className="brand" href="/">autops<span className="brand-dot">.</span></Link><Link href="/">프로젝트로 돌아가기</Link></header>
-      <div className="gh-intro"><p className="eyebrow">LET’S CONNECT YOUR PROJECT</p><h1>내 저장소에서 시작해요.</h1><p>GitHub에서 허용한 저장소를 연결하고,<br />내 서비스의 다음 단계를 준비해주세요.</p></div>
+      <div className="gh-intro"><p className="eyebrow">LET’S CONNECT YOUR PROJECT</p><h1>내 서비스를 연결해요.</h1><p>GitHub 저장소와 Vercel·Supabase 프로젝트를 선택하고,<br />내 서비스의 상태를 읽기 전용으로 확인해주세요.</p></div>
       <ol className="gh-steps" aria-label="연결 단계"><li aria-current={!connection?.user ? "step" : undefined}><span>01</span>GitHub 인증</li><li aria-current={connection?.user && !connection.repository ? "step" : undefined}><span>02</span>저장소 선택</li><li aria-current={connection?.repository ? "step" : undefined}><span>03</span>연결 확인</li></ol>
       <section className="gh-card" aria-labelledby="github-title" aria-busy={loading || saving}>
         <div className="gh-title"><span className="gh-icon" aria-hidden="true">⑂</span><div><h2 id="github-title">GitHub 저장소 연결</h2><p>선택한 저장소의 읽기 권한부터 시작해요.</p></div></div>
@@ -132,7 +133,9 @@ export default function GitHubOnboarding() {
         {error && <div className="gh-error" role="alert">{error}<button type="button" onClick={refresh} disabled={loading || saving}>다시 확인</button></div>}
         <p className="gh-notice" role="status" aria-live="polite">{notice}</p>
       </section>
-      <footer className="gh-footer"><strong>연결은 코드 변경이나 배포를 시작하지 않아요.</strong><p>연결은 이 브라우저의 보호된 세션에 보관되며, 최대 8시간 후 다시 인증해야 해요.<br />GitHub App 권한은 GitHub 설정에서 변경하거나 제거할 수 있어요.</p></footer>
+      <CloudConnection key={`vercel-${connection?.user?.id ?? "guest"}`} provider="vercel" enabled={Boolean(connection?.user)} />
+      <CloudConnection key={`supabase-${connection?.user?.id ?? "guest"}`} provider="supabase" enabled={Boolean(connection?.user)} />
+      <footer className="gh-footer"><strong>연결은 코드 변경이나 배포를 시작하지 않아요.</strong><p>연결은 이 브라우저의 보호된 세션에 보관돼요. 토큰 만료 또는 최대 8시간 후 다시 인증해야 해요.<br />각 서비스 설정에서 앱 권한을 철회할 수 있어요.</p></footer>
     </main>
   );
 }
