@@ -2,6 +2,7 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 import McpUrlCopy from "@/components/McpUrlCopy";
 import GitHubIcon from "@/components/GitHubIcon";
+import ConnectChatGPT from "@/components/ConnectChatGPT";
 import ServiceIcon from "@/components/ServiceIcon";
 
 export default function Home() {
@@ -30,7 +31,8 @@ export default function Home() {
           </li>
           <li className="pl-2">
             <h3 className="flex items-center gap-2 font-semibold"><ServiceIcon service="chatgpt" className="h-4 w-4" />Connect autops in ChatGPT</h3>
-            <p className="mt-1 leading-7 text-[#71717a]">Follow the connection guide below to add autops in ChatGPT. You will need a ChatGPT account that allows custom MCP connections.</p>
+            <p className="mt-1 leading-7 text-[#71717a]">Use the button below, then follow the connection guide. You will need a ChatGPT account that allows custom MCP connections.</p>
+            <ConnectChatGPT />
           </li>
           <li className="pl-2">
             <h3 className="font-semibold">Ask about your service</h3>
@@ -38,7 +40,7 @@ export default function Home() {
           </li>
         </ol>
         <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Show my connected GitHub account and selected repository. Explain what you can inspect with my current connections.</blockquote>
-        <details id="chatgpt" open className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
+        <details open className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
           <summary className="cursor-pointer font-medium"><span className="inline-flex items-center gap-2 align-middle"><ServiceIcon service="chatgpt" />ChatGPT connection guide</span></summary>
           <div className="mt-4 space-y-3 leading-7 text-[#71717a]">
             <p>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noreferrer" className="underline underline-offset-4">ChatGPT Plugins</a>, select <strong className="text-[#27272a]">+</strong> (Add), then <strong className="text-[#27272a]">Add custom MCP server</strong>. Already have autops? Refresh that connection instead.</p>
