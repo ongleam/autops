@@ -100,12 +100,6 @@ The supported diagnostic target is [ongleam/compiled-ex-project](https://github.
 
 If you have connected a different repository, autops reports that these diagnostics are unsupported for that repository rather than showing demo results as your project's results.
 
-## Optional homepage settings
-
-**Project settings** lets you set a project name, service URL, and requested scope for the homepage's generated prompt. These settings stay in your browser. They do not select your authenticated GitHub repository or grant permissions; the form's repository is the fixed public demo.
-
-Under **ChatGPT connection guide**, **Copy prompt** copies a suggested inspection workflow to paste into ChatGPT. Review it before sending: the workflow describes steps that may require capabilities beyond those currently available. Copying a prompt or selecting a requested scope does not execute it, authorize changes, deploy a service, or create a schedule.
-
 ## Current limits
 
 - Live API diagnostics support the public demo project only. General source inspection and connected cloud status or log reads are separate capabilities.
@@ -113,7 +107,6 @@ Under **ChatGPT connection guide**, **Copy prompt** copies a suggested inspectio
 - Source updates support one existing UTF-8 source file at a time, up to 100 KB. File creation, deletion, secret files, and workflow files are not supported.
 - autops does not run tests or verify a deployment as part of saving a source change. Automatic deployment, persistent diagnostic history, and built-in scheduling are not available.
 - Cloud logs cover a bounded recent window, up to 60 minutes and 100 entries. Results depend on your provider permissions, log retention, and available data.
-- The homepage's **Free** and **Pro** pricing cards describe a proposed model. Billing and time-based access limits are not active.
 
 ## If something does not connect
 

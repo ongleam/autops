@@ -4,12 +4,12 @@
 
 Current capabilities: connect a GitHub account and selected repository, read authorized source files through the ChatGPT MCP connection, make reviewed single-file source updates with explicit write authorization, and view selected Vercel or Supabase project status. Live API diagnostics work only for the public compiled-ex-project demo.
 
-The home page presents a proposed time-based pricing model: Free at $0 for 3 hours per day and Pro at $20 per month for 24 hours per day. Time limits, billing, recurring checks, and deployment automation are not active. The MCP cannot directly deploy or schedule work. Do not describe these planned features as available.
+The homepage explains why autops exists and how to start: connect a project, connect autops in ChatGPT, and ask about the service. Automatic deployment and scheduling are not available. Billing and time-based access limits are not active.
 
 ## Public pages
 
-- [Home](https://autops-app.vercel.app/): Product problem, goal, current connection flow, and proposed pricing.
-- [Project README](https://github.com/ongleam/autops/blob/main/README.md): Setup, integrations, OAuth scopes, and MCP limitations.
+- [Home](https://autops-app.vercel.app/): Product purpose, three-step setup, ChatGPT connection details, and current capabilities.
+- [Project README](https://github.com/ongleam/autops/blob/main/README.md): Full user guide, example requests, troubleshooting, and current limitations.
 
 ## Policies
 
