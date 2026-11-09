@@ -22,6 +22,10 @@ const dynamicStylesheets = [
     message: "Use Tailwind CSS utilities instead of requiring stylesheets.",
   },
 ];
+const inlineStyles = [
+  { selector: "JSXAttribute[name.name='style']", message: "Use Tailwind CSS utilities instead of inline styles." },
+  { selector: "JSXElement[openingElement.name.name='style']", message: "Use Tailwind CSS utilities instead of style tags." },
+];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -60,8 +64,7 @@ const eslintConfig = defineConfig([
       "no-restricted-syntax": [
         "error",
         ...dynamicStylesheets,
-        { selector: "JSXAttribute[name.name='style']", message: "Use Tailwind CSS utilities instead of inline styles." },
-        { selector: "JSXElement[openingElement.name.name='style']", message: "Use Tailwind CSS utilities instead of style tags." },
+        ...inlineStyles,
       ],
     },
   },
@@ -105,6 +108,25 @@ const eslintConfig = defineConfig([
           { group: ["fs", "fs/**", "node:fs", "node:fs/**", "bun:sqlite"], message: "The public MCP does not persist user data on the server filesystem." },
         ],
       }],
+    },
+  },
+  {
+    files: ["app/**/{page,layout,route}.{js,jsx,ts,tsx}"],
+    rules: {
+      // cacheComponents is enabled; these exports fail the Next.js build.
+      "no-restricted-syntax": [
+        "error",
+        ...dynamicStylesheets,
+        ...inlineStyles,
+        {
+          selector: "ExportNamedDeclaration > VariableDeclaration > VariableDeclarator[id.name=/^(runtime|dynamic|dynamicParams|revalidate|fetchCache|experimental_ppr)$/]",
+          message: "Remove this route segment config: it is incompatible with cacheComponents in next.config.ts.",
+        },
+        {
+          selector: "ExportSpecifier[exported.name=/^(runtime|dynamic|dynamicParams|revalidate|fetchCache|experimental_ppr)$/]",
+          message: "Remove this route segment config: it is incompatible with cacheComponents in next.config.ts.",
+        },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.
