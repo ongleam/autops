@@ -36,7 +36,7 @@ export default function Home() {
     const updateActiveSection = () => {
       const current = [...steps].reverse().find((step) => {
         const section = document.getElementById(step.id);
-        return section && section.getBoundingClientRect().top <= window.innerHeight * 0.3;
+        return section && section.getBoundingClientRect().top <= window.innerHeight * 0.5;
       });
       const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
       setActive(atBottom ? steps[steps.length - 1].id : current?.id ?? steps[0].id);
@@ -45,11 +45,17 @@ export default function Home() {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(updateActiveSection);
     };
+    const observer = new ResizeObserver(scheduleUpdate);
+    steps.forEach((step) => {
+      const section = document.getElementById(step.id);
+      if (section) observer.observe(section);
+    });
     scheduleUpdate();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate);
     return () => {
       cancelAnimationFrame(frame);
+      observer.disconnect();
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
     };
