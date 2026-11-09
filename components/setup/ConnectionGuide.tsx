@@ -15,6 +15,7 @@ type CopyResult = { value: string; manual: boolean } | null;
 export default function ConnectionGuide({ settings, mcpUrl, serverReady }: Props) {
   const addressRef = useRef<HTMLInputElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const promptDetailsRef = useRef<HTMLDetailsElement>(null);
   const [addressCopy, setAddressCopy] = useState<CopyResult>(null);
   const [promptCopy, setPromptCopy] = useState<CopyResult>(null);
   const projectData = JSON.stringify(
@@ -57,6 +58,7 @@ ${projectData}
       await navigator.clipboard.writeText(prompt);
       setPromptCopy({ value: prompt, manual: false });
     } catch {
+      if (promptDetailsRef.current) promptDetailsRef.current.open = true;
       promptRef.current?.focus();
       promptRef.current?.select();
       setPromptCopy({ value: prompt, manual: true });
@@ -119,19 +121,11 @@ ${projectData}
         <p className={styles.description}>
           프로젝트 설정이 아래 프롬프트에 반영돼요. 실제 도구와 권한을 먼저 확인하도록 작성했어요.
         </p>
-        <div className={styles.promptHeading}>
+        <details ref={promptDetailsRef} className={styles.promptDetails}>
+          <summary>프롬프트 내용 보기</summary>
           <label className={styles.label} htmlFor="maintenance-prompt">점검·개선 요청 프롬프트</label>
-          <span className={styles.liveLabel}>입력한 설정 반영</span>
-        </div>
-        <textarea
-          id="maintenance-prompt"
-          ref={promptRef}
-          className={styles.prompt}
-          value={prompt}
-          readOnly
-          rows={10}
-          spellCheck={false}
-        />
+          <textarea id="maintenance-prompt" ref={promptRef} className={styles.prompt} value={prompt} readOnly rows={7} spellCheck={false} />
+        </details>
         <div className={styles.actions}>
           <button type="button" className={styles.primaryButton} onClick={copyPrompt}>
             프롬프트 복사 <span aria-hidden="true">→</span>
