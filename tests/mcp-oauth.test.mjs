@@ -253,3 +253,10 @@ test("cross-origin authorization and forged token grants are rejected", async ()
   expect(exchange.status).toBe(400);
   expect((await exchange.json()).error).toBe("invalid_grant");
 });
+
+test("issue writes require repository read consent and are advertised separately", async () => {
+  expect(authorizationMetadata().scopes_supported).toContain("issues.write");
+  const { client_id: clientId } = await (await register()).json();
+  expect((await authorize(clientId, { scope: "accounts.read issues.write" })).status).toBe(400);
+  expect((await authorize(clientId, { scope: "accounts.read repository.read issues.write" })).status).toBe(303);
+});

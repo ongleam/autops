@@ -13,11 +13,12 @@ export const CLOUD_SCOPE = "cloud.read";
 export const CLOUD_DEPLOY_SCOPE = "cloud.deploy";
 export const REPOSITORY_READ_SCOPE = "repository.read";
 export const REPOSITORY_WRITE_SCOPE = "repository.write";
-const SCOPES = [ACCOUNT_SCOPE, CLOUD_SCOPE, CLOUD_DEPLOY_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
+export const ISSUES_WRITE_SCOPE = "issues.write";
+const SCOPES = [ACCOUNT_SCOPE, CLOUD_SCOPE, CLOUD_DEPLOY_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE, ISSUES_WRITE_SCOPE];
 const scopeSchema = z.string().max(256).refine((value) => {
   const scopes = value.split(" ");
   return scopes.includes(ACCOUNT_SCOPE) && scopes.every((scope) => SCOPES.includes(scope)) &&
-    (!scopes.includes(REPOSITORY_WRITE_SCOPE) || scopes.includes(REPOSITORY_READ_SCOPE)) &&
+    (!scopes.some(scope => [REPOSITORY_WRITE_SCOPE, ISSUES_WRITE_SCOPE].includes(scope)) || scopes.includes(REPOSITORY_READ_SCOPE)) &&
     (!scopes.includes(CLOUD_DEPLOY_SCOPE) || (scopes.includes(CLOUD_SCOPE) && scopes.includes(REPOSITORY_READ_SCOPE)));
 });
 const FLOW_COOKIE = "__Host-autops-mcp-flow";
@@ -286,7 +287,7 @@ export async function getCloudOwner(request: Request | undefined, requiredScope 
 
 export async function getRepositoryConnection(request: Request | undefined, requiredScope = REPOSITORY_READ_SCOPE): Promise<RepositoryConnection> {
   const access = getAccess(request);
-  const required = [ACCOUNT_SCOPE, REPOSITORY_READ_SCOPE, ...(requiredScope === REPOSITORY_WRITE_SCOPE ? [REPOSITORY_WRITE_SCOPE] : [])].join(" ");
+  const required = [ACCOUNT_SCOPE, REPOSITORY_READ_SCOPE, ...(requiredScope !== REPOSITORY_READ_SCOPE ? [requiredScope] : [])].join(" ");
   if (!access || !access.scope.split(" ").includes(requiredScope)) throw new McpAuthorizationError(required);
   const client = createGitHubClient(access.token);
   const user = await client.getUser();
@@ -308,7 +309,7 @@ export async function getConnectedAccounts(request: Request | undefined) {
   if (!appId) throw new Error("setup_required");
   const repositories = await client.getRepositories(appId);
   return { github: { connected: true, user, repository: repositories.find((repo) => repo.id === access.repositoryId) ?? null, repositories },
-    permissions: { cloudDeploy: access.scope.split(" ").includes(CLOUD_DEPLOY_SCOPE), repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
+    permissions: { issuesWrite: access.scope.split(" ").includes(ISSUES_WRITE_SCOPE), cloudDeploy: access.scope.split(" ").includes(CLOUD_DEPLOY_SCOPE), repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
     authorization: { grantType: access.authorizationGrant, expiresAt: new Date(access.expiresAt * 1000).toISOString(),
       refreshAvailable: access.refreshAvailable ?? null, automaticRenewalObserved: access.authorizationGrant === "refresh_token",
       action: access.refreshAvailable === undefined ? "Reconnect the existing autops connection to replace this legacy grant. Automatic renewal has not been verified."

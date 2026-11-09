@@ -20,7 +20,9 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       await client.connect(transport);
       const { tools } = await client.listTools();
       assert.deepEqual(tools.map((tool) => tool.name).sort(), [
+        "comment_issue",
         "compare_diagnostics",
+        "create_issue",
         "deploy_project",
         "diagnose_project",
         "get_cloud_projects",
@@ -28,14 +30,16 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
         "get_connection_instructions",
         "get_deployment_status",
         "get_diagnostic",
+        "get_issue",
         "get_maintenance_prompt",
         "get_project_context",
         "get_project_logs",
         "get_repository_file",
         "list_diagnostics",
+        "update_issue",
         "update_repository_file",
       ]);
-      assert.ok(tools.filter((tool) => !["update_repository_file", "deploy_project", "diagnose_project"].includes(tool.name)).every((tool) => tool.annotations?.readOnlyHint));
+      assert.ok(tools.filter((tool) => !["create_issue", "comment_issue", "update_issue", "update_repository_file", "deploy_project", "diagnose_project"].includes(tool.name)).every((tool) => tool.annotations?.readOnlyHint));
       assert.equal(tools.find((tool) => tool.name === "update_repository_file")?.annotations?.readOnlyHint, false);
       assert.deepEqual(tools.find((tool) => tool.name === "get_connected_accounts")?._meta?.securitySchemes,
         [{ type: "oauth2", scopes: ["accounts.read"] }]);
@@ -50,6 +54,7 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
         repositoryRead: true,
         comparison: false,
         changes: false,
+        issueTracking: false,
         diagnosticHistory: false,
         deploymentRequests: false,
       });
