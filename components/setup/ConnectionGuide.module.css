@@ -1,0 +1,32 @@
+.guide{display:grid;gap:22px;min-width:0}
+.card{background:#fff;border:1px solid var(--line,#e6e9e2);border-radius:14px;padding:28px;min-width:0;scroll-margin-top:24px}
+.heading{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.step{display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border-radius:11px;background:#edf2e4;color:#55713e;font-size:13px;font-weight:600}
+.eyebrow{color:#78866c;font-size:10px;letter-spacing:1.5px;margin:0 0 6px;font-weight:600}
+.heading h2{font-size:19px;letter-spacing:-.6px;line-height:1.4;margin:0;font-weight:600}
+.badge{margin-left:auto;font-size:11px;color:#7b786b;background:#f4f3ee;padding:6px 9px;border-radius:5px;white-space:nowrap}
+.description{font-size:13px;line-height:1.9;color:#78836f;margin:20px 0 22px}
+.label{display:block;font-size:13px;font-weight:600;margin:0 0 9px;color:#414e3b}
+.copyRow{display:flex;gap:9px;align-items:stretch}
+.address{width:100%;min-width:0;border:1px solid #e0e6d8;border-radius:7px;padding:12px;background:#f8faf5;font-size:12px;font-family:monospace;color:#526348;line-height:1.6}
+.copyButton,.primaryButton{border:1px solid #dbe4d0;border-radius:7px;padding:12px 16px;display:inline-flex;gap:15px;align-items:center;justify-content:center;white-space:nowrap;font-size:12px;font-weight:600;min-height:43px}
+.copyButton{background:#f1f5e9;color:#52683e;flex-shrink:0}
+.copyButton:hover{background:#e6eedb}.copyButton:disabled{opacity:.5;cursor:wait}
+.copyStatus{font-size:11px;color:#7b876f;line-height:1.7;min-height:19px;margin:8px 0 0}
+.instructions{list-style:none;margin:21px 0 0;padding:0;display:grid;gap:13px}
+.instructions li{display:flex;align-items:flex-start;gap:10px}
+.instructions li>span{display:grid;place-items:center;flex-shrink:0;width:21px;height:21px;border:1px solid #e0e6d8;border-radius:50%;font-size:10px;color:#7a8c69;margin-top:1px}
+.instructions p{margin:0;font-size:12px;line-height:1.9;color:#66735b;overflow-wrap:anywhere}
+.instructions code{font-size:11px;background:#f1f4ec;padding:2px 4px;border-radius:3px;color:#4f643e}
+.notice{display:flex;align-items:flex-start;gap:8px;background:#f8f9f5;border-radius:7px;padding:12px;margin-top:21px;color:#839274}
+.notice>span{font-size:14px}.notice p{margin:0;font-size:11px;line-height:1.8}
+.promptHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;flex-wrap:wrap}
+.promptHeading .label{margin:0}.liveLabel{font-size:10px;color:#8c9980}
+.prompt{display:block;width:100%;min-width:0;resize:vertical;border:1px solid #e1e7d9;border-radius:8px;background:#f8faf5;color:#617154;font:12px/1.9 Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;padding:16px;min-height:190px;max-height:500px}
+.actions{display:flex;align-items:center;gap:22px;margin-top:16px;flex-wrap:wrap}
+.primaryButton{background:#2e4030;border-color:#2e4030;color:#fff}.primaryButton:hover{background:#456045}
+.chatLink{font-size:12px;font-weight:600;color:#617c49;display:inline-flex;align-items:center;gap:10px;padding:10px 0}
+.scheduleNote{border-top:1px solid #e9ede3;margin-top:22px;padding-top:20px}
+.scheduleNote strong{font-size:12px;font-weight:600;color:#596b4a}.scheduleNote p{font-size:12px;line-height:1.9;color:#829076;margin:8px 0 0}
+.address:focus-visible,.prompt:focus-visible{outline:2px solid #527b3b;outline-offset:3px}
+@media(max-width:640px){.card{padding:22px 19px}.heading{gap:10px}.heading h2{font-size:17px}.badge{margin-left:48px;margin-top:-4px}.description{font-size:12px}.copyRow{flex-direction:column}.copyButton{align-self:flex-start}.address{font-size:12px}.actions{gap:17px}.prompt{padding:13px;font-size:12px}.instructions p{font-size:12px}.scheduleNote p{font-size:11px}}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import ProjectSetupForm from "@/components/setup/ProjectSetupForm";
+import ConnectionGuide from "@/components/setup/ConnectionGuide";
 import { DEFAULT_PROJECT_SETTINGS, DEMO_PROJECT, type ProjectSettings } from "@/components/setup/types";
 
 const steps = [
@@ -15,6 +16,20 @@ export default function Home() {
   const [active, setActive] = useState("project");
   const [saved, setSaved] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mcpReady, setMcpReady] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/project-context", { signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((context) => {
+        if (context?.repository === DEMO_PROJECT.repository && context?.capabilities?.context === true) {
+          setMcpReady(true);
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const origin = useSyncExternalStore(
     () => () => {},
     () => window.location.origin,
@@ -56,8 +71,7 @@ export default function Home() {
                 <div className="setup-section-heading"><div><span className="setup-section-step">STEP 01</span><h2 id="project-title">어떤 서비스를 살펴볼까요?</h2><p>이 브라우저에 보관할 기본 정보를 입력해주세요.</p></div><span className={`setup-local-state ${saved ? "is-saved" : ""}`}>{saved ? "브라우저에 저장됨" : "기본 정보"}</span></div>
                 <ProjectSetupForm settings={settings} onChange={updateSettings} onSaved={() => setSaved(true)} />
               </section>
-              <section id="mcp" className="setup-project-card setup-pending"><span className="setup-section-step">STEP 02 · MCP 연결</span><h2>AI와 연결할 주소</h2><p>연결 안내를 준비하고 있어요. 주소 복사는 실제 연결을 의미하지 않아요.</p><code>{origin}/api/mcp</code></section>
-              <section id="schedule" className="setup-project-card setup-pending"><span className="setup-section-step">STEP 03 · CHATGPT</span><h2>프로젝트 설정 다음에는</h2><p>ChatGPT에서 MCP를 연결하고, 점검 요청과 예약을 준비할 수 있어요.</p></section>
+              <ConnectionGuide settings={settings} mcpUrl={`${origin}/api/mcp`} serverReady={mcpReady} />
             </div>
             <aside className="setup-context-column" aria-label="프로젝트 안내">
               <div className="setup-project-summary"><div className="setup-summary-icon" aria-hidden="true">⑂</div><span className="setup-kicker">DEMO PROJECT</span><h2>{settings.name.trim() || "나의 첫 서비스"}</h2><a href={DEMO_PROJECT.repository} target="_blank" rel="noreferrer">ongleam/<br /><strong>compiled-ex-project</strong> ↗</a><div className="setup-branch"><span aria-hidden="true">⑂</span> {DEMO_PROJECT.branch}<span>공개 저장소</span></div></div>
