@@ -101,6 +101,13 @@ API 응답은 필요한 필드만 포함하며 토큰·원본 공급자 오류�
 
 ## 실제 MCP 저장소 읽기·API 진단
 
+### ChatGPT OAuth 연결
+
+[기존 autops 플러그인](https://chatgpt.com/plugins/plugins_6af1529648d08191bf6207c118591426)은 OAuth와 동적 클라이언트 등록(DCR)을 사용합니다. 서버 주소는 `https://autops-app.vercel.app/api/mcp`입니다.
+`accounts.read` 동의 후 GitHub 계정과 App에 허용한 저장소 목록을 최대 1시간 조회합니다. PKCE S256·리디렉션 주소·state·issuer·audience를 검증하며, 코드 쓰기·배포 권한은 제공하지 않습니다.
+웹사이트 `/login`의 Supabase 이메일 로그인과 MCP의 GitHub OAuth는 별도 인증입니다. Vercel·Supabase 웹 세션도 MCP로 전달하지 않습니다.
+배포 후 ChatGPT에서 `get_connected_accounts` → `get_project_context` → `get_repository_file`(`lib/products.ts`) → `diagnose_project`를 실제 호출해 확인합니다. 공개 데모 진단 도구는 인증 없이도 사용할 수 있으므로 진단 성공만으로 OAuth 성공을 판단하지 않습니다.
+
 공개 MCP는 `ongleam/compiled-ex-project` 하나만 대상으로 합니다. GitHub App 설치 토큰을 해당 저장소의 Contents·Metadata 읽기로 제한하고,
 README·package.json·lib/products.ts·app/api/products/route.ts만 실제 커밋에서 읽습니다. 저장소가 비공개로 바뀌면 공개 MCP의 소스 읽기를 거부합니다.
 다른 온보딩 사용자의 저장소·세션·토큰을 이 공개 MCP로 전달하지 않습니다.
