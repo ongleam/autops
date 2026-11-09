@@ -31,6 +31,28 @@ export default function Home() {
       .catch(() => {});
     return () => controller.abort();
   }, []);
+  useEffect(() => {
+    let frame = 0;
+    const updateActiveSection = () => {
+      const current = [...steps].reverse().find((step) => {
+        const section = document.getElementById(step.id);
+        return section && section.getBoundingClientRect().top <= window.innerHeight * 0.3;
+      });
+      setActive(current?.id ?? steps[0].id);
+    };
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateActiveSection);
+    };
+    scheduleUpdate();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  }, []);
   const origin = useSyncExternalStore(
     () => () => {},
     () => window.location.origin,
