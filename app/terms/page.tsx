@@ -4,7 +4,7 @@ import Link from "next/link";
 const description = "Read the autops demo terms, current features, account permissions, service limitations, and how to end use.";
 export const metadata: Metadata = {
   title: "Demo terms — autops", description, alternates: { canonical: "/terms" },
-  openGraph: { title: "Demo terms — autops", description, url: "/terms", siteName: "autops", type: "website" },
+  openGraph: { title: "Demo terms — autops", description, url: "/terms", siteName: "autops", type: "website", images: ["/opengraph-image"] },
   twitter: { card: "summary_large_image", title: "Demo terms — autops", description, images: ["/opengraph-image"] },
 };
 
