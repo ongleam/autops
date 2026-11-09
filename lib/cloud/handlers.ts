@@ -11,6 +11,9 @@ import { disconnectConnection, hasConnectionStore, readConnection, saveConnectio
 const MESSAGES: Record<string, string> = {
   setup_required: "Service connection setup is required. Contact your administrator.",
   storage_unavailable: "Connection storage is unavailable. Your saved connection has not been removed. Try again later.",
+  logs_timeout: "Vercel did not deliver its runtime log stream within 15 seconds. Your existing project connection is unchanged.",
+  logs_invalid_response: "Vercel returned an unexpected runtime log format. The token was not saved.",
+  logs_plan_required: "This Vercel plan does not allow the requested logs.",
   logs_token_invalid: "The Vercel logs token is invalid or expired. Replace it below. Your project connection is unchanged.",
   logs_permission_required: "This token cannot read runtime logs. Review its team access before saving.",
   github_required: "Sign in with GitHub first.",

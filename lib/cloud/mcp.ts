@@ -63,7 +63,7 @@ async function getVercelLogs(session: CloudSession, project: CloudProject, start
   const url = new URL(`https://api.vercel.com/v1/projects/${encodeURIComponent(project.id)}/deployments/${encodeURIComponent(deploymentId)}/runtime-logs`);
   url.searchParams.set("teamId", session.teamId);
   url.searchParams.set("format", "lines");
-  const signal = AbortSignal.timeout(5_000);
+  const signal = AbortSignal.timeout(15_000);
   const response = await fetch(url, { headers: { Authorization: `Bearer ${session.logsToken ?? session.token}`, Accept: "application/stream+json, application/x-ndjson" },
     cache: "no-store", redirect: "error", signal }).catch(() => {
     throw new CloudError(signal.aborted ? 504 : 502, signal.aborted ? "logs_timeout" : "logs_unavailable");
