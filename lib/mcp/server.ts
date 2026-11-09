@@ -196,10 +196,10 @@ const handler = createMcpHandler(({ requestInfo }) => {
     title: mutation.title, description: "Use only for a user-requested issue operation in the OAuth-selected repository. Requires issues.write and GitHub App Issues: Read and write. No other repository or pull request can be targeted. A timeout does not confirm failure; inspect GitHub before retrying to avoid duplicates.",
     inputSchema: mutation.schema, annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     _meta: { securitySchemes: [{ type: "oauth2", scopes: [ACCOUNT_SCOPE, REPOSITORY_READ_SCOPE, ISSUES_WRITE_SCOPE] }] },
-  }, async input => {
+  }, async (input: unknown) => {
     try {
       const result = await mutation.action(await getRepositoryConnection(requestInfo, ISSUES_WRITE_SCOPE), input);
-      return { content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result };
+      return { content: [{ type: "text" as const, text: JSON.stringify(result) }], structuredContent: result };
     } catch (error) { return toolError(error); }
   });
 
