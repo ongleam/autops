@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { getConsent, MCP_FLOW_COOKIE } from "@/lib/mcp/oauth";
 
+export const instant = false;
 export const metadata = { title: "ChatGPT 계정 연결 — autops", referrer: "no-referrer" };
 export default async function ChatGPTConsent({ searchParams }: { searchParams: Promise<{ flow?: string }> }) {
   const { flow: value } = await searchParams;
