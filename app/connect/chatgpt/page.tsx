@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { getConsent, MCP_FLOW_COOKIE } from "@/lib/mcp/oauth";
+import { getConsent } from "@/lib/mcp/oauth";
 
 export const instant = false;
 export const metadata = { title: "ChatGPT 계정 연결 — autops", referrer: "same-origin" };
 export default async function ChatGPTConsent({ searchParams }: { searchParams: Promise<{ flow?: string }> }) {
   const { flow: value } = await searchParams;
-  const flow = getConsent(value, (await cookies()).get(MCP_FLOW_COOKIE)?.value);
+  const flow = getConsent(value, await cookies());
   return <main className="mx-auto max-w-xl px-6 py-16">
     <Link href="/" className="text-2xl font-bold">autops.</Link>
     <h1 className="mt-8 text-2xl font-semibold">ChatGPT에 GitHub 계정 연결</h1>

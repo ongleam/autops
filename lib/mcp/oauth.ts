@@ -48,8 +48,8 @@ function validRedirect(value: string) {
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store", "Pragma": "no-cache", "Access-Control-Allow-Origin": "https://chatgpt.com" } });
 }
-function setFlow(response: NextResponse, value: string, maxAge: number) {
-  response.cookies.set(FLOW_COOKIE, value, { secure: true, httpOnly: true, sameSite: "lax", path: "/", maxAge });
+function setFlow(response: NextResponse, nonce: string, value: string, maxAge: number) {
+  response.cookies.set(`${FLOW_COOKIE}-${nonce}`, value, { secure: true, httpOnly: true, sameSite: "lax", path: "/", maxAge });
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   return response;
@@ -65,9 +65,9 @@ export function resourceMetadata() {
   return { resource: MCP_URL, authorization_servers: [ISSUER], scopes_supported: [ACCOUNT_SCOPE], bearer_methods_supported: ["header"] };
 }
 
-export function getConsent(flowValue: string | undefined, cookieValue: string | undefined) {
+export function getConsent(flowValue: string | undefined, cookies: { get(name: string): { value: string } | undefined }) {
   const flow = decode(flowValue, "consent", flowSchema);
-  return flow && flow.nonce === cookieValue ? flow : null;
+  return flow && flow.nonce === cookies.get(`${FLOW_COOKIE}-${flow.nonce}`)?.value ? flow : null;
 }
 export const MCP_FLOW_COOKIE = FLOW_COOKIE;
 
@@ -102,25 +102,26 @@ export async function handleOAuth(request: NextRequest, action: string) {
         ownerId: valid?.user.id ?? null, repositoryId: valid?.repository?.id ?? null };
       const target = new URL("/connect/chatgpt", ISSUER);
       target.searchParams.set("flow", encode(flow, "consent", 600));
-      return setFlow(NextResponse.redirect(target, 303), flow.nonce, 600);
+      return setFlow(NextResponse.redirect(target, 303), flow.nonce, flow.nonce, 600);
     }
     if (action === "authorize" && request.method === "POST") {
       if (request.headers.get("origin") !== ISSUER) return json({ error: "access_denied" }, 403);
       const text = await request.text();
       if (text.length > 8192) return json({ error: "invalid_request" }, 400);
       const body = new URLSearchParams(text);
-      const flow = getConsent(body.get("flow") || undefined, request.cookies.get(FLOW_COOKIE)?.value);
+      const flow = getConsent(body.get("flow") || undefined, request.cookies);
       if (!flow) return json({ error: "invalid_request", error_description: "Authorization expired. Start again in ChatGPT." }, 400);
       if (body.get("decision") !== "allow") {
         const target = new URL(flow.redirectUri);
         target.search = new URLSearchParams({ error: "access_denied", state: flow.state, iss: ISSUER }).toString();
-        return setFlow(NextResponse.redirect(target, 303), "", 0);
+        return setFlow(NextResponse.redirect(target, 303), flow.nonce, "", 0);
       }
       const state = `mcp.${randomBytes(32).toString("base64url")}`;
       const target = new URL("https://github.com/login/oauth/authorize");
       target.search = new URLSearchParams({ client_id: cfg.clientId, redirect_uri: `${ISSUER}/api/github/callback`, state,
         code_challenge: flow.challenge, code_challenge_method: "S256" }).toString();
-      return setFlow(NextResponse.redirect(target, 303), encode({ ...flow, nonce: state }, "github-flow", 600), 600);
+      const response = setFlow(NextResponse.redirect(target, 303), flow.nonce, "", 0);
+      return setFlow(response, state, encode({ ...flow, nonce: state }, "github-flow", 600), 600);
     }
     if (action === "token" && request.method === "POST") {
       const text = await request.text();
@@ -153,15 +154,17 @@ export async function handleOAuth(request: NextRequest, action: string) {
 }
 
 export function handleMcpGitHubCallback(request: NextRequest) {
-  const flow = decode(request.cookies.get(FLOW_COOKIE)?.value, "github-flow", flowSchema);
-  if (!flow || flow.nonce !== request.nextUrl.searchParams.get("state")) return json({ error: "invalid_request" }, 400);
+  const state = request.nextUrl.searchParams.get("state") || "";
+  if (!/^mcp\.[a-zA-Z0-9_-]{43}$/.test(state)) return json({ error: "invalid_request" }, 400);
+  const flow = decode(request.cookies.get(`${FLOW_COOKIE}-${state}`)?.value, "github-flow", flowSchema);
+  if (!flow || flow.nonce !== state) return json({ error: "invalid_request" }, 400);
   const target = new URL(flow.redirectUri);
   target.searchParams.set("state", flow.state);
   target.searchParams.set("iss", ISSUER);
   const code = request.nextUrl.searchParams.get("code");
   if (!code || code.length > 512 || request.nextUrl.searchParams.has("error")) target.searchParams.set("error", "access_denied");
   else target.searchParams.set("code", encode({ ...flow, code }, "code", 60));
-  return setFlow(NextResponse.redirect(target, 303), "", 0);
+  return setFlow(NextResponse.redirect(target, 303), flow.nonce, "", 0);
 }
 
 export async function getConnectedAccounts(request: Request | undefined) {

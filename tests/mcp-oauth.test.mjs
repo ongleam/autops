@@ -58,9 +58,9 @@ test("denied consent returns bound state and issuer to the registered callback",
   const authorization = await authorize(clientId);
   expect(authorization.status).toBe(303);
   const flow = new URL(authorization.headers.get("location")).searchParams.get("flow");
-  const nonce = authorization.cookies.get(MCP_FLOW_COOKIE).value;
+  const cookie = authorization.cookies.getAll().find((item) => item.name.startsWith(MCP_FLOW_COOKIE));
   const response = await handleOAuth(new NextRequest(`${ISSUER}/oauth/authorize`, {
-    method: "POST", headers: { origin: ISSUER, cookie: `${MCP_FLOW_COOKIE}=${nonce}` },
+    method: "POST", headers: { origin: ISSUER, cookie: `${cookie.name}=${cookie.value}` },
     body: new URLSearchParams({ flow, decision: "deny" }).toString(),
   }), "authorize");
   const callback = new URL(response.headers.get("location"));
