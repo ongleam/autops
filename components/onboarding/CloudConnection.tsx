@@ -3,7 +3,7 @@
 import VercelLogAccess from "./VercelLogAccess";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import ServiceIcon from "@/components/ServiceIcon";
 import type { CloudOverview, CloudProject, Provider } from "@/lib/cloud/client";
 
 type Connection = { configured: boolean; connected: boolean; status?: string; logsConfigured?: boolean; project: CloudProject | null };
@@ -128,11 +128,11 @@ export default function CloudConnection({ provider, enabled }: Props) {
 
   return (
     <section id={provider} className="bg-white border border-solid border-[var(--line)] rounded-[7px] p-8 shadow-[0_12px_36px_#18181b06] max-[600px]:py-[23px] max-[600px]:px-4.5 mt-6" aria-labelledby={`${provider}-title`} aria-busy={enabled && (loading || busy)}>
-      <div className="flex gap-[15px] items-center mb-7 [&_h2]:m-0 [&_h2]:text-[20px] [&_h2]:tracking-[-.6px] [&_p]:text-[12px] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[600px]:[&_h2]:text-[18px]"><Image src={`/brands/${provider}.svg`} alt="" width={120} height={28} className="h-6 w-30 shrink-0 object-contain object-left" /><div><h2 id={`${provider}-title`}>{name} project connection</h2><p>{provider === "vercel" ? "Recent deployment · Read-only" : "Region and status · Read-only"}</p></div></div>
+      <div className="flex gap-[15px] items-center mb-7 [&_h2]:m-0 [&_h2]:text-[20px] [&_h2]:tracking-[-.6px] [&_p]:text-[12px] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[600px]:[&_h2]:text-[18px]"><span className="grid h-12 w-12 shrink-0 place-items-center rounded-[12px] bg-[#f4f4f5]"><ServiceIcon service={provider} className="h-7 w-7" /></span><div><h2 id={`${provider}-title`}>{name} project connection</h2><p>{provider === "vercel" ? "Recent deployment · Read-only" : "Region and status · Read-only"}</p></div></div>
       {!enabled ? <p className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6">Connect your GitHub account first.</p> : loading ? <p role="status">Checking connection…</p> : !connection ? <p>Check the connection again.</p> : !connection.configured ? (
         <div className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6"><strong>{name} connection is being configured</strong><p>Available once your administrator configures this integration.</p><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#d4d4d8] bg-white rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#f4f4f5]" onClick={refresh}>Check setup again</button></div>
       ) : !connection.connected ? (
-        <div className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6"><p>{name}: authorize access and select a project to inspect.</p><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#3f3f46] text-white" onClick={() => window.location.assign(new URL(`${base}/start`, window.location.origin).href)}>{name} Connect</button></div>
+        <div className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6"><p>{name}: authorize access and select a project to inspect.</p><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#3f3f46] text-white" onClick={() => window.location.assign(new URL(`${base}/start`, window.location.origin).href)}><ServiceIcon service={provider} className={provider === "vercel" ? "h-5 w-5 invert" : "h-5 w-5"} />{name} Connect</button></div>
       ) : (
         <>
           <div className="border-t border-solid border-t-[var(--line)] py-4.5 px-0 flex justify-between items-center gap-3 text-[12px] text-[#71717a] [&_strong]:text-[#27272a] [&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] max-[600px]:items-start"><span>{name} access authorized</span><button type="button" onClick={disconnect} disabled={busy}>Disconnect</button></div>

@@ -3,6 +3,7 @@ import Logo from "@/components/Logo";
 import McpUrlCopy from "@/components/McpUrlCopy";
 import GitHubIcon from "@/components/GitHubIcon";
 import ServiceIcon from "@/components/ServiceIcon";
+import ServiceIcon from "@/components/ServiceIcon";
 
 export default function Home() {
   return (

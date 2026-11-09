@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import Logo from "@/components/Logo";
+import ServiceIcon from "@/components/ServiceIcon";
 import { getConsent, CLOUD_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE } from "@/lib/mcp/oauth";
 
 export const instant = false;
@@ -9,7 +10,7 @@ export default async function ChatGPTConsent({ searchParams }: { searchParams: P
   const flow = getConsent(value, await cookies());
   return <main className="mx-auto max-w-xl px-6 py-16">
     <Logo className="text-2xl" />
-    <h1 className="mt-8 text-2xl font-semibold">Connect your GitHub account to ChatGPT</h1>
+    <h1 className="mt-8 flex items-center gap-3 text-2xl font-semibold"><ServiceIcon service="chatgpt" className="h-8 w-8" />Connect your GitHub account to ChatGPT</h1>
     {flow ? <>
       <p className="mt-5 leading-8">Allow ChatGPT to read your GitHub account name and repositories authorized for the GitHub App through autops.</p>
       {flow.scope.split(" ").includes(REPOSITORY_READ_SCOPE) && <p className="mt-4 leading-8">Allow source reads from the repository selected on autops. Repository access is checked again for every request.</p>}
