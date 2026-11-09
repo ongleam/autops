@@ -31,10 +31,10 @@ export default function Home() {
           </li>
           <li className="pl-2">
             <h3 className="font-semibold">Ask about your service</h3>
-            <p className="mt-1 leading-7 text-[#71717a]">Select @autops. Ask it to explain your code, check a deployment, or investigate recent errors.</p>
+            <p className="mt-1 leading-7 text-[#71717a]">Select @autops. Ask it to explain your code or check a deployment. Connect log access to investigate errors.</p>
           </li>
         </ol>
-        <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Check my connected project. Show any recent errors and explain what I should investigate next.</blockquote>
+        <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Check my connected project. Show its deployment status and explain what I should investigate next.</blockquote>
         <details className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
           <summary className="cursor-pointer font-medium">ChatGPT connection guide</summary>
           <div className="mt-4 space-y-3 leading-7 text-[#71717a]">
