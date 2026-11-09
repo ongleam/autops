@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   title: "autops — AI DevOps for solo builders",
   description: "Build alone, operate with AI. autops connects your code and service context so solo builders can inspect, verify, and improve what they ship.",
   alternates: { canonical: "/", types: { "text/plain": "/llms.txt" } },
-  openGraph: { title: "autops — AI DevOps for solo builders", description: "Build alone, operate with AI. Inspect and improve your service with autops.", url: "/", siteName: "autops", type: "website" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

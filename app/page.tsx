@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import McpUrlCopy from "@/components/McpUrlCopy";
@@ -5,9 +6,30 @@ import GitHubIcon from "@/components/GitHubIcon";
 import ConnectChatGPT from "@/components/ConnectChatGPT";
 import ServiceIcon from "@/components/ServiceIcon";
 
+const description = "autops helps solo builders inspect GitHub code, Vercel and Supabase projects, and available logs through ChatGPT. Connect your project and understand what to improve next.";
+
+export const metadata: Metadata = {
+  title: "autops — AI DevOps for solo builders",
+  description,
+  alternates: { canonical: "/" },
+  openGraph: { title: "autops — AI DevOps for solo builders", description, url: "/", siteName: "autops", type: "website" },
+  twitter: { card: "summary_large_image", title: "autops — AI DevOps for solo builders", description, images: ["/opengraph-image"] },
+};
+
+const website = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "autops",
+  url: "https://autops-app.vercel.app/",
+  description,
+};
+
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-6 sm:py-8">
+      {/* JSON-LD is static site data; escaping '<' keeps the script safe. */}
+      {/* eslint-disable-next-line react/no-danger */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(website).replace(/</g, "\\u003c") }} />
       <header className="flex items-center justify-between">
         <Logo className="text-xl" />
         <Link href="/login" className="inline-flex min-h-11 items-center gap-2 text-sm text-[#71717a] hover:text-[#2563eb]"><GitHubIcon className="h-4 w-4" />Sign in</Link>

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { alternates: { canonical: "/privacy" }, title: "Privacy policy — Autops" };
+const description = "Learn how autops handles connected GitHub, Vercel, and Supabase account data, OAuth credentials, service logs, and disconnection.";
+export const metadata: Metadata = {
+  title: "Privacy policy — autops", description, alternates: { canonical: "/privacy" },
+  openGraph: { title: "Privacy policy — autops", description, url: "/privacy", siteName: "autops", type: "website" },
+  twitter: { card: "summary_large_image", title: "Privacy policy — autops", description, images: ["/opengraph-image"] },
+};
 
 export default function PrivacyPage() {
   return (
