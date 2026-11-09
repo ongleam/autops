@@ -39,7 +39,9 @@ function validRedirect(value: string) {
   try {
     const url = new URL(value);
     return url.origin === "https://chatgpt.com" && !url.hash && !url.username && !url.password &&
-      (url.pathname === "/connector_platform/oauth/callback" || /^\/aip\/[a-zA-Z0-9_-]+\/oauth\/callback$/.test(url.pathname));
+      (url.pathname === "/connector_platform_oauth_redirect" ||
+        /^\/connector\/oauth\/[a-zA-Z0-9_-]+$/.test(url.pathname) ||
+        url.pathname === "/connector_platform/oauth/callback" || /^\/aip\/[a-zA-Z0-9_-]+\/oauth\/callback$/.test(url.pathname));
   } catch { return false; }
 }
 
@@ -55,6 +57,7 @@ function setFlow(response: NextResponse, value: string, maxAge: number) {
 
 export function authorizationMetadata() {
   return { issuer: ISSUER, authorization_endpoint: `${ISSUER}/oauth/authorize`, token_endpoint: `${ISSUER}/oauth/token`,
+    authorization_response_iss_parameter_supported: true,
     registration_endpoint: `${ISSUER}/oauth/register`, response_types_supported: ["code"], grant_types_supported: ["authorization_code"],
     token_endpoint_auth_methods_supported: ["none"], code_challenge_methods_supported: ["S256"], scopes_supported: [ACCOUNT_SCOPE] };
 }
@@ -110,7 +113,7 @@ export async function handleOAuth(request: NextRequest, action: string) {
       if (!flow) return json({ error: "invalid_request", error_description: "Authorization expired. Start again in ChatGPT." }, 400);
       if (body.get("decision") !== "allow") {
         const target = new URL(flow.redirectUri);
-        target.search = new URLSearchParams({ error: "access_denied", state: flow.state }).toString();
+        target.search = new URLSearchParams({ error: "access_denied", state: flow.state, iss: ISSUER }).toString();
         return setFlow(NextResponse.redirect(target, 303), "", 0);
       }
       const state = `mcp.${randomBytes(32).toString("base64url")}`;
@@ -154,6 +157,7 @@ export function handleMcpGitHubCallback(request: NextRequest) {
   if (!flow || flow.nonce !== request.nextUrl.searchParams.get("state")) return json({ error: "invalid_request" }, 400);
   const target = new URL(flow.redirectUri);
   target.searchParams.set("state", flow.state);
+  target.searchParams.set("iss", ISSUER);
   const code = request.nextUrl.searchParams.get("code");
   if (!code || code.length > 512 || request.nextUrl.searchParams.has("error")) target.searchParams.set("error", "access_denied");
   else target.searchParams.set("code", encode({ ...flow, code }, "code", 60));
