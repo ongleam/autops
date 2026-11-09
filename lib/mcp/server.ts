@@ -100,12 +100,11 @@ const handler = createMcpHandler(({ requestInfo }) => {
       description: "Read the authenticated GitHub account, selected repository and OAuth read/write permissions. With cloud.read, validate the Vercel and Supabase connections saved for this same GitHub user. Never returns credentials.",
       inputSchema: z.object({}).strict(),
       annotations: readOnlyAnnotations,
-      _meta: { securitySchemes: [{ type: "oauth2", scopes: [ACCOUNT_SCOPE, CLOUD_SCOPE] }] },
+      _meta: { securitySchemes: [{ type: "oauth2", scopes: [ACCOUNT_SCOPE] }] },
     },
     async () => {
       try {
         const accounts = await getConnectedAccounts(requestInfo);
-        if (accounts?.cloudAccounts.status === "authorization_required") throw new McpAuthorizationError(`${ACCOUNT_SCOPE} ${CLOUD_SCOPE}`);
         if (accounts) return { content: [{ type: "text" as const, text: JSON.stringify(accounts, null, 2) }], structuredContent: accounts };
       } catch (error) {
         if (error instanceof McpAuthorizationError) return toolError(error);

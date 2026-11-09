@@ -21,15 +21,19 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       const { tools } = await client.listTools();
       assert.deepEqual(tools.map((tool) => tool.name).sort(), [
         "diagnose_project",
+        "get_cloud_projects",
         "get_connected_accounts",
         "get_connection_instructions",
         "get_maintenance_prompt",
         "get_project_context",
+        "get_project_logs",
         "get_repository_file",
         "update_repository_file",
       ]);
       assert.ok(tools.filter((tool) => tool.name !== "update_repository_file").every((tool) => tool.annotations?.readOnlyHint));
       assert.equal(tools.find((tool) => tool.name === "update_repository_file")?.annotations?.readOnlyHint, false);
+      assert.deepEqual(tools.find((tool) => tool.name === "get_connected_accounts")?._meta?.securitySchemes,
+        [{ type: "oauth2", scopes: ["accounts.read"] }]);
       const result = await client.callTool({ name: "get_project_context", arguments: {} });
       assert.equal(result.isError, undefined);
       const context = result.structuredContent as Record<string, unknown>;
