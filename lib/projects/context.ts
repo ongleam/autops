@@ -40,10 +40,10 @@ export function getConnectionInstructions() {
     transport: "Streamable HTTP",
     authentication: "GitHub OAuth; selected repository reads and writes require explicit scopes",
     steps: [
-      "Add a custom MCP server in ChatGPT plugins. Menus may vary by account and workspace.",
+      "Use the existing autops plugin in ChatGPT; refresh its tools and reconnect the same account when permissions change. Create a custom MCP server only if autops has not been installed.",
       `For the server URL, enter ${MCP_URL} and select OAuth. Leave the client ID and secret empty to use automatic registration.`,
       "Sign in with GitHub and select a repository on autops before connecting repository tools in ChatGPT.",
-      "Refresh the existing autops plugin to load updated tools. Authorize accounts.read and repository.read; authorize repository.write only for requested code changes.",
+      "Authorize accounts.read and repository.read, cloud.read for your connected cloud projects, and repository.write for requested code changes. Review all requested permissions together before consenting.",
       "For writes, approve Contents: Read and write on the GitHub App installation for the selected repository, then reconnect OAuth.",
       "Set up a schedule separately in ChatGPT with a time and timezone, then verify an actual execution.",
     ],
