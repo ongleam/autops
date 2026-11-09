@@ -57,29 +57,23 @@ export default function Home() {
       </div>
       <section className="mt-20 border-t border-[var(--line)] pt-12" aria-labelledby="pricing-title">
         <p className="text-xs font-semibold uppercase tracking-widest text-[#2563eb]">Pricing concept</p>
-        <h2 id="pricing-title" className="mt-3 text-2xl font-semibold tracking-tight">Inspect. Improve. Repeat.</h2>
-        <p className="mt-3 max-w-xl text-sm leading-7 text-[#71717a]">Start by connecting your service. Pay when you need a repeatable review process, then bring your team into the same loop.</p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
+        <h2 id="pricing-title" className="mt-3 text-2xl font-semibold tracking-tight">More time for the work that matters.</h2>
+        <p className="mt-3 max-w-xl text-sm leading-7 text-[#71717a]">Verification and deployment take human hours. Our simple unit is time available each day to run that loop.</p>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-[var(--line)] bg-white p-5">
             <h3 className="font-semibold">Free</h3>
-            <p className="mt-4 text-2xl font-semibold">₩0</p>
-            <p className="mt-1 text-xs text-[#71717a]">For your first inspection</p>
-            <p className="mt-6 text-sm leading-6">Connect a repository and review its source with ChatGPT.</p>
+            <p className="mt-4 text-3xl font-semibold">3 hours<span className="text-sm font-normal text-[#71717a]"> / day</span></p>
+            <p className="mt-4 text-xl font-semibold">₩0</p>
+            <p className="mt-5 text-sm leading-6">A daily window for verification and deployment workflows.</p>
           </div>
           <div className="rounded-xl border border-[#18181b] bg-white p-5">
             <h3 className="font-semibold">Pro</h3>
-            <p className="mt-4 text-2xl font-semibold">₩19,900<span className="text-sm font-normal text-[#71717a]"> / month</span></p>
-            <p className="mt-1 text-xs text-[#71717a]">For a continuous improvement loop</p>
-            <p className="mt-6 text-sm leading-6">Recurring checks, review history, and progress across projects.</p>
-          </div>
-          <div className="rounded-xl border border-[var(--line)] bg-white p-5">
-            <h3 className="font-semibold">Team</h3>
-            <p className="mt-4 text-2xl font-semibold">Custom</p>
-            <p className="mt-1 text-xs text-[#71717a]">For a shared view of service health</p>
-            <p className="mt-6 text-sm leading-6">Shared reviews, roles, and team reporting.</p>
+            <p className="mt-4 text-3xl font-semibold">24 hours<span className="text-sm font-normal text-[#71717a]"> / day</span></p>
+            <p className="mt-4 text-xl font-semibold">₩19,900<span className="text-sm font-normal text-[#71717a]"> / month</span></p>
+            <p className="mt-5 text-sm leading-6">Keep the verification and deployment loop available all day.</p>
           </div>
         </div>
-        <p className="mt-4 text-xs leading-5 text-[#71717a]">Pro and Team are planned offerings. Pricing is a proposal; billing, recurring checks, and team features are not available yet. Live API diagnostics currently support the public demo project only.</p>
+        <p className="mt-4 text-xs leading-5 text-[#71717a]">Time-based access and billing are a proposed model, not active limits or paid features. Deployment automation is not available yet; live API diagnostics currently support the public demo project only.</p>
       </section>
       <footer className="mt-10 flex gap-5 text-xs text-[#71717a]">
         <Link href="/terms" className="py-2">Terms</Link>
