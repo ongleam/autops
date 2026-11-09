@@ -23,24 +23,28 @@ export default function Home() {
         <ol className="mt-6 list-decimal space-y-5 pl-5 text-sm marker:text-[#71717a]">
           <li className="pl-2">
             <h3 className="font-semibold">Connect your project</h3>
-            <p className="mt-1 leading-7 text-[#71717a]">Sign in with GitHub and choose a repository. Add Vercel or Supabase if you use them.</p>
+            <p className="mt-1 leading-7 text-[#71717a]">Sign in with GitHub, install the autops GitHub App for the repositories you choose, then select a repository and click Connect this repository. Vercel and Supabase are optional.</p>
           </li>
           <li className="pl-2">
             <h3 className="font-semibold">Connect autops in ChatGPT</h3>
-            <p className="mt-1 leading-7 text-[#71717a]">Add the MCP server below as autops with OAuth in ChatGPT, if your workspace allows custom connections. Authorize the same GitHub account and repository.</p>
+            <p className="mt-1 leading-7 text-[#71717a]">Follow the connection guide below to add autops in ChatGPT. You will need a ChatGPT account that allows custom MCP connections.</p>
           </li>
           <li className="pl-2">
             <h3 className="font-semibold">Ask about your service</h3>
-            <p className="mt-1 leading-7 text-[#71717a]">Select @autops. Ask it to explain your code or check a deployment. Connect log access to investigate errors.</p>
+            <p className="mt-1 leading-7 text-[#71717a]">Start a new chat, type @ and select autops, then send the message below. Check that the answer shows your GitHub account and selected repository.</p>
           </li>
         </ol>
-        <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Check my connected project. Show its deployment status and explain what I should investigate next.</blockquote>
-        <details className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
+        <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Show my connected GitHub account and selected repository. Explain what you can inspect with my current connections.</blockquote>
+        <details id="chatgpt" open className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
           <summary className="cursor-pointer font-medium">ChatGPT connection guide</summary>
           <div className="mt-4 space-y-3 leading-7 text-[#71717a]">
-            <p>If your ChatGPT workspace allows custom MCP connections, create one. Use <strong className="text-[#27272a]">autops</strong> as the name and select <strong className="text-[#27272a]">OAuth</strong>. Leave the client ID and secret empty.</p>
+            <p>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noreferrer" className="underline underline-offset-4">ChatGPT Plugins</a>, select <strong className="text-[#27272a]">+</strong> (Add), then <strong className="text-[#27272a]">Add custom MCP server</strong>. Already have autops? Refresh that connection instead.</p>
+            <p>Name it <strong className="text-[#27272a]">autops</strong>, choose <strong className="text-[#27272a]">Server URL</strong>, and paste this address:</p>
             <p className="break-all rounded-md bg-[#f4f4f5] px-3 py-2 font-mono text-xs text-[#27272a]">https://autops-app.vercel.app/api/mcp</p>
-            <p>Approve repository reads and cloud reads for connected services. Then ask autops to confirm your account and selected repository. If already connected, refresh the existing plugin.</p>
+            <p>Select <strong className="text-[#27272a]">OAuth</strong> and leave the client ID and secret empty for automatic registration. Review the notice and select <strong className="text-[#27272a]">Create as a plugin</strong>. Complete authorization with the same GitHub account and selected repository.</p>
+            <p>Allow account and repository reads; cloud reads are needed only for connected providers. Source edits require separate write permission.</p>
+            <p>Cannot find the add option? Ask your workspace administrator about custom MCP access. Repository missing? Return to <Link href="/onboarding" className="underline underline-offset-4">GitHub connections</Link>, use Manage repository access in GitHub, then refresh the list.</p>
+            <a href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center underline underline-offset-4">Official ChatGPT connection help</a>
           </div>
         </details>
       </section>
