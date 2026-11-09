@@ -71,15 +71,11 @@ ${projectData}
         <header className="flex items-center gap-[13px] flex-wrap [&_h2]:text-[19px] [&_h2]:tracking-[-.6px] [&_h2]:leading-[1.4] [&_h2]:m-0 [&_h2]:font-semibold max-[640px]:gap-2.5 max-[640px]:[&_h2]:text-[17px]">
           <span className="grid place-items-center shrink-0 w-9.5 h-9.5 rounded-[5px] bg-[#f4f4f5] text-[#52525b] text-[13px] font-semibold">02</span>
           <div>
-            <p className="text-[#71717a] text-[10px] tracking-[1.5px] mt-0 mx-0 mb-1.5 font-semibold">MCP CONNECTION</p>
             <h2 id="mcp-title">MCP 연결</h2>
           </div>
           <span className="ml-auto text-[11px] text-[#71717a] bg-[#f4f4f5] py-1.5 px-[9px] rounded-[5px] whitespace-nowrap max-[640px]:ml-12 max-[640px]:mt-[-4px]">{serverReady ? "MCP 서버 제공 중" : "서버 확인 전"}</span>
         </header>
-        <p className="text-[13px] leading-[1.9] text-[#71717a] mt-5 mx-0 mb-5.5 max-[640px]:text-[12px]">
-          {serverReady ? "아래 주소를 ChatGPT에 등록하세요." : "서버 확인 후 아래 주소를 등록하세요."}
-        </p>
-        <label className="block text-[13px] font-semibold mt-0 mx-0 mb-[9px] text-[#27272a]" htmlFor="mcp-address">MCP 연결 주소</label>
+        <label className="block text-[13px] font-semibold mt-5 mx-0 mb-[9px] text-[#27272a]" htmlFor="mcp-address">MCP 연결 주소</label>
         <div className="flex gap-[9px] items-stretch max-[640px]:flex-col">
           <input
             id="mcp-address"
@@ -100,24 +96,23 @@ ${projectData}
               : "복사 완료 · ChatGPT에 등록하세요."
             : ""}
         </p>
-        <McpConnectionSteps />
-        <div className="flex items-start gap-2 bg-[#fafafa] rounded-[7px] p-3 mt-[21px] text-[#71717a] [&>span]:text-[14px] [&_p]:m-0 [&_p]:text-[11px] [&_p]:leading-[1.8]">
-          <span aria-hidden="true">ⓘ</span>
-          <p>{serverReady ? "계정 조회: OAuth 필요 · 공개 데모 진단: 인증 불필요 · CPU·메모리 계측 및 코드 변경 미지원" : "서버 확인 전 · ChatGPT에서 도구 호출로 연결을 확인하세요."}</p>
-        </div>
+        <details className="mt-4 [&_summary]:cursor-pointer [&_summary]:text-xs [&_summary]:text-[#52525b]">
+          <summary>연결 방법 및 지원 범위</summary>
+          <McpConnectionSteps />
+          <div className="flex items-start gap-2 bg-[#fafafa] rounded-[7px] p-3 mt-[21px] text-[#71717a] [&>span]:text-[14px] [&_p]:m-0 [&_p]:text-[11px] [&_p]:leading-[1.8]">
+            <span aria-hidden="true">ⓘ</span>
+            <p>{serverReady ? "계정 조회: OAuth 필요 · 공개 데모 진단: 인증 불필요 · CPU·메모리 계측 및 코드 변경 미지원" : "서버 확인 전 · ChatGPT에서 도구 호출로 연결을 확인하세요."}</p>
+          </div>
+        </details>
       </section>
 
       <section id="schedule" className="bg-white border border-solid border-[var(--line,#e4e4e7)] rounded-[7px] p-7 min-w-0 scroll-mt-6 max-[640px]:py-5.5 max-[640px]:px-[19px]" aria-labelledby="schedule-title">
         <header className="flex items-center gap-[13px] flex-wrap [&_h2]:text-[19px] [&_h2]:tracking-[-.6px] [&_h2]:leading-[1.4] [&_h2]:m-0 [&_h2]:font-semibold max-[640px]:gap-2.5 max-[640px]:[&_h2]:text-[17px]">
           <span className="grid place-items-center shrink-0 w-9.5 h-9.5 rounded-[5px] bg-[#f4f4f5] text-[#52525b] text-[13px] font-semibold">03</span>
           <div>
-            <p className="text-[#71717a] text-[10px] tracking-[1.5px] mt-0 mx-0 mb-1.5 font-semibold">MAINTENANCE</p>
-            <h2 id="schedule-title">점검 프롬프트</h2>
+            <h2 id="schedule-title">ChatGPT에서 시작</h2>
           </div>
         </header>
-        <p className="text-[13px] leading-[1.9] text-[#71717a] mt-5 mx-0 mb-5.5 max-[640px]:text-[12px]">
-          설정이 담긴 프롬프트를 복사해 붙여넣으세요.
-        </p>
         <details ref={promptDetailsRef} className="mt-4 [&_summary]:text-[12px] [&_summary]:text-[#52525b] [&_summary]:cursor-pointer [&_summary]:py-2 [&_summary]:px-0 [&[open]_summary]:mb-3">
           <summary>프롬프트 내용 보기</summary>
           <label className="block text-[13px] font-semibold mt-0 mx-0 mb-[9px] text-[#27272a]" htmlFor="maintenance-prompt">점검·개선 요청 프롬프트</label>
@@ -138,10 +133,10 @@ ${projectData}
               : "프롬프트를 복사했어요. ChatGPT에 붙여넣어주세요."
             : ""}
         </p>
-        <div className="border-t border-solid border-t-[#f4f4f5] mt-5.5 pt-5 [&_strong]:text-[12px] [&_strong]:font-semibold [&_strong]:text-[#52525b] [&_p]:text-[12px] [&_p]:leading-[1.9] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[640px]:[&_p]:text-[11px]">
-          <strong>예약은 ChatGPT에서</strong>
+        <details className="[&_summary]:cursor-pointer border-t border-solid border-t-[#f4f4f5] mt-5.5 pt-5 [&_summary]:text-[12px] [&_summary]:font-semibold [&_summary]:text-[#52525b] [&_p]:text-[12px] [&_p]:leading-[1.9] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[640px]:[&_p]:text-[11px]">
+          <summary>예약 안내</summary>
           <p>도구 연결 확인 후 시각·시간대를 지정하세요. 복사만으로 예약되지는 않아요.</p>
-        </div>
+        </details>
       </section>
     </div>
   );
