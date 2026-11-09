@@ -20,9 +20,11 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       await client.connect(transport);
       const { tools } = await client.listTools();
       assert.deepEqual(tools.map((tool) => tool.name).sort(), [
+        "diagnose_project",
         "get_connection_instructions",
         "get_maintenance_prompt",
         "get_project_context",
+        "get_repository_file",
       ]);
       assert.ok(tools.every((tool) => tool.annotations?.readOnlyHint));
       const result = await client.callTool({ name: "get_project_context", arguments: {} });
@@ -32,7 +34,8 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       assert.equal(context.mcpUrl, "https://autops-app.vercel.app/api/mcp");
       assert.deepEqual(context.capabilities, {
         context: true,
-        diagnostics: false,
+        diagnostics: true,
+        repositoryRead: true,
         comparison: false,
         changes: false,
         scheduling: false,
@@ -40,9 +43,13 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       const instructions = await client.callTool({ name: "get_connection_instructions", arguments: {} });
       assert.equal((instructions.structuredContent as Record<string, unknown>).authentication, "No authentication");
       const prompt = await client.callTool({ name: "get_maintenance_prompt", arguments: {} });
-      assert.ok(prompt.content.some((item) => item.type === "text" && item.text.includes("진단·비교·변경·예약 도구와 권한이 없다면")));
+      assert.ok(prompt.content.some((item) => item.type === "text" && item.text.includes("diagnose_project")));
       const invalid = await client.callTool({ name: "get_project_context", arguments: { repository: "https://example.com" } });
       assert.equal(invalid.isError, true);
+      const invalidFile = await client.callTool({ name: "get_repository_file", arguments: { path: ".env" } });
+      assert.equal(invalidFile.isError, true);
+      const invalidTarget = await client.callTool({ name: "diagnose_project", arguments: { url: "http://169.254.169.254" } });
+      assert.equal(invalidTarget.isError, true);
     } finally {
       await client.close();
     }

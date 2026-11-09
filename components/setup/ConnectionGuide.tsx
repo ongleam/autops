@@ -106,7 +106,7 @@ ${projectData}
         </ol>
         <div className={styles.notice}>
           <span aria-hidden="true">ⓘ</span>
-          <p>{serverReady ? "ChatGPT에서 인증 방식은 ‘없음’으로 연결해주세요. 프로젝트 확인 도구는 읽기 전용이며, 실제 진단·코드 변경 도구는 아직 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
+          <p>{serverReady ? "ChatGPT에서 인증 방식은 ‘없음’으로 연결해주세요. 고정 공개 데모 저장소의 소스 읽기와 API 진단을 제공해요. CPU·메모리 계측과 코드 변경은 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
         </div>
       </section>
 
