@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createGitHubClient } from "@/lib/github/client";
 import { getCookieName, getSession, type GitHubSession } from "@/lib/github/session";
 
@@ -21,6 +22,7 @@ async function hasGitHubSession() {
 }
 
 export default async function Login() {
+  await connection();
   if (await hasGitHubSession()) redirect("/onboarding");
   redirect("/api/github/start");
 }

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import Logo from "@/components/Logo";
 import ServiceIcon from "@/components/ServiceIcon";
 import { getConsent, CLOUD_SCOPE, CLOUD_DEPLOY_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE } from "@/lib/mcp/oauth";
@@ -6,6 +7,7 @@ import { getConsent, CLOUD_SCOPE, CLOUD_DEPLOY_SCOPE, REPOSITORY_READ_SCOPE, REP
 export const instant = false;
 export const metadata = { robots: { index: false, follow: false }, alternates: { canonical: "/connect/chatgpt" }, title: "Connect ChatGPT account — autops", referrer: "same-origin" };
 export default async function ChatGPTConsent({ searchParams }: { searchParams: Promise<{ flow?: string }> }) {
+  await connection();
   const { flow: value } = await searchParams;
   const flow = getConsent(value, await cookies());
   return <main className="mx-auto max-w-xl px-6 py-16">
