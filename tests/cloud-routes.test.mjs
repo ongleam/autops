@@ -131,3 +131,10 @@ test("OAuth callback persists credentials on the server and sets no credential c
   expect((await readConnection("1","supabase")).session.refreshToken).toBe("rotated-refresh");
   expect(result.headers.get("set-cookie")).not.toContain("rotated-access");
 });
+
+test("explicit permission review starts OAuth without deleting the working connection", async () => {
+  await saveConnection("supabase",session());
+  const result=await handleCloudRequest(request("supabase","start?reauthorize=1"),"supabase","start",config);
+  expect(result.headers.get("location")).toContain("https://api.supabase.com/v1/oauth/authorize");
+  expect((await readConnection("1","supabase")).session.projectId).toBe("project_a");
+});
