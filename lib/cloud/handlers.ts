@@ -1,3 +1,5 @@
+import { z } from "zod/v4";
+import { verifyVercelLogsToken } from "./mcp";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createSession, getSession, getCookieName, type GitHubSession } from "../github/session";
@@ -9,6 +11,8 @@ import { disconnectConnection, hasConnectionStore, readConnection, saveConnectio
 const MESSAGES: Record<string, string> = {
   setup_required: "Service connection setup is required. Contact your administrator.",
   storage_unavailable: "Connection storage is unavailable. Your saved connection has not been removed. Try again later.",
+  logs_token_invalid: "The Vercel logs token is invalid or expired. Replace it below. Your project connection is unchanged.",
+  logs_permission_required: "This token cannot read runtime logs. Review its team access before saving.",
   github_required: "Sign in with GitHub first.",
   reconnect: "Authorization was revoked or could not be refreshed. Reconnect to continue.",
   reauthorization_required: "Authorization was revoked or could not be refreshed. Reconnect to continue.",
@@ -68,7 +72,7 @@ async function callback(request: NextRequest, provider: Provider, config: CloudC
           const projects = await getCloudProjects(provider, session);
           const previous = await readConnection(owner, provider);
           const previousProject = previous?.session?.projectId;
-          await saveConnection(provider, { ...session, ...(projects.some((project) => project.id === previousProject) ? { projectId: previousProject } : {}) });
+          await saveConnection(provider, { ...session, ...(provider === "vercel" && previous?.session?.logsToken ? { logsToken: previous.session.logsToken } : {}), ...(projects.some((project) => project.id === previousProject) ? { projectId: previousProject } : {}) });
           result = "connected";
         } catch (error) { result = error instanceof CloudError && error.code === "storage_unavailable" ? "storage_unavailable" : "authorization_failed"; }
       }
@@ -129,6 +133,21 @@ export async function handleCloudRequest(request: NextRequest, providerName: str
       return protect(NextResponse.json(status));
     }
     const result = await withCloudConnection(owner, provider, async (session, revision) => {
+      if (provider === "vercel" && action === "logs-token" && ["POST", "DELETE"].includes(request.method)) {
+        if (request.method === "DELETE") {
+          await saveConnection(provider, { ...session, logsToken: undefined }, revision);
+          return { saved: false };
+        }
+        if (!request.headers.get("content-type")?.startsWith("application/json")) throw new CloudError(400, "invalid_request");
+        const text = await request.text();
+        if (text.length > 6000) throw new CloudError(400, "invalid_request");
+        let body: unknown; try { body = JSON.parse(text); } catch { throw new CloudError(400, "invalid_request"); }
+        const input = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{20,4096}$/) }).strict().safeParse(body);
+        if (!input.success) throw new CloudError(400, "invalid_request");
+        await verifyVercelLogsToken(session, input.data.token);
+        await saveConnection(provider, { ...session, logsToken: input.data.token }, revision);
+        return { saved: true };
+      }
       if (request.method === "GET" && action === "overview") return getCloudOverview(provider, session);
       if (request.method === "GET" && action === "projects") return { projects: await getCloudProjects(provider, session) };
       if (request.method === "POST" && action === "selection") {

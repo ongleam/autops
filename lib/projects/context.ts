@@ -63,7 +63,7 @@ export function getConnectionInstructions() {
       "Live API diagnostics support only the selected compiled-ex-project demo. Other selected repositories support source reads and authorized file updates, not live API metrics.",
       "Writes commit an existing source file to the selected default branch; they do not run tests or confirm deployment. No direct deployment or scheduling tools are provided.",
       "Cloud project and log tools require cloud.read consent and use the same GitHub user's encrypted server connection. Credentials are never returned. Provider permissions and retention apply.",
-      "Do not enter passwords, API keys, or tokens into this server.",
+      "Never send passwords, API keys or provider tokens through MCP or chat. Optional Vercel log API tokens are connected only through the dedicated secure onboarding form.",
     ],
   };
 }

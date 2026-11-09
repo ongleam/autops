@@ -45,9 +45,11 @@ beforeEach(() => {
       refreshCount++;
       return Response.json({ access_token: "rotated-access", refresh_token: "rotated-refresh", expires_in: 3600, team_id: "team_a" });
     }
+    if (String(init.headers?.Authorization).includes("bad-vercel-log-token")) return Response.json({}, {status:401});
     if (providerStatus !== 200) return Response.json({}, {status: providerStatus});
     if (url.pathname.endsWith("/runtime-logs")) {
       logReads++;
+      if (String(init.headers?.Authorization).includes("forbidden-vercel-log-token")) return Response.json({}, {status:403});
       expect(url.pathname).toContain("/projects/project_a/deployments/deployment_a/");
       return new Response(JSON.stringify({timestampInMs:Date.now(),level:"info",message:"Bearer cloud-1",source:"serverless"})+"\n",{headers:{"Content-Type":"application/x-ndjson"}});
     }
@@ -143,4 +145,35 @@ test("explicit permission review starts OAuth without deleting the working conne
   const result=await handleCloudRequest(request("supabase","start?reauthorize=1"),"supabase","start",config);
   expect(result.headers.get("location")).toContain("https://api.supabase.com/v1/oauth/authorize");
   expect((await readConnection("1","supabase")).session.projectId).toBe("project_a");
+});
+
+test("Vercel log token is verified, encrypted, user-scoped, and independently removable", async () => {
+  await saveConnection("vercel",session());
+  const result=await handleCloudRequest(request("vercel","logs-token",{method:"POST",headers:{origin:"http://localhost:3000","content-type":"application/json"},body:JSON.stringify({token:"valid-vercel-log-token-12345"})}),"vercel","logs-token",config);
+  expect(result.status).toBe(200);
+  expect(JSON.stringify(rows)).not.toContain("valid-vercel-log-token");
+  expect((await readConnection("1","vercel")).session.logsToken).toBe("valid-vercel-log-token-12345");
+  expect(await readConnection("2","vercel")).toBeNull();
+  const removed=await handleCloudRequest(request("vercel","logs-token",{method:"DELETE",headers:{origin:"http://localhost:3000"}}),"vercel","logs-token",config);
+  expect(removed.status).toBe(200);
+  expect((await readConnection("1","vercel")).session.logsToken).toBeUndefined();
+  expect((await readConnection("1","vercel")).session.token).toBe("cloud-1");
+});
+test("a rejected or expired logs token never invalidates the Vercel OAuth connection", async () => {
+  await saveConnection("vercel",session());
+  const rejected=await handleCloudRequest(request("vercel","logs-token",{method:"POST",headers:{origin:"http://localhost:3000","content-type":"application/json"},body:JSON.stringify({token:"bad-vercel-log-token-12345"})}),"vercel","logs-token",config);
+  expect(rejected.status).toBe(403);
+  expect((await readConnection("1","vercel")).session.token).toBe("cloud-1");
+  await saveConnection("vercel",session("1",{logsToken:"bad-vercel-log-token-12345"}));
+  await expect(getUserProjectLogs("1",cloudLogsInput.parse({provider:"vercel"}))).rejects.toMatchObject({code:"logs_token_invalid"});
+  expect((await readConnection("1","vercel")).session.token).toBe("cloud-1");
+});
+
+test("log API denial cannot be saved as verified token access", async () => {
+  await saveConnection("vercel",session());
+  const response=await handleCloudRequest(request("vercel","logs-token",{method:"POST",headers:{origin:"http://localhost:3000","content-type":"application/json"},body:JSON.stringify({token:"forbidden-vercel-log-token-12345"})}),"vercel","logs-token",config);
+  expect(response.status).toBe(403);
+  const stored=await readConnection("1","vercel");
+  expect(stored.session.logsToken).toBeUndefined();
+  expect(stored.session.token).toBe("cloud-1");
 });

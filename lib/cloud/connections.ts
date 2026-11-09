@@ -14,7 +14,8 @@ export function parseCloudToken(provider: Provider, value: unknown, owner: strin
   return { token: token.access_token, owner, expiresAt: token.expires_in ? Math.floor(Date.now() / 1000) + token.expires_in : null,
     ...(token.refresh_token || previous?.refreshToken ? { refreshToken: token.refresh_token ?? previous?.refreshToken } : {}),
     ...(provider === "vercel" && token.team_id ? { teamId: token.team_id } : previous?.teamId ? { teamId: previous.teamId } : {}),
-    ...(previous?.projectId ? { projectId: previous.projectId } : {}) };
+    ...(previous?.projectId ? { projectId: previous.projectId } : {}),
+    ...(provider === "vercel" && previous?.logsToken ? { logsToken: previous.logsToken } : {}) };
 }
 
 async function refresh(owner: string, provider: Provider, stored: StoredConnection, config: CloudConfig): Promise<StoredConnection> {
@@ -73,7 +74,7 @@ export async function getCloudConnectionStatus(owner: string, provider: Provider
   try {
     return await withCloudConnection(owner, provider, async (session) => {
       const projects = await getCloudProjects(provider, session);
-      return { configured: true, connected: true, status: "connected", project: projects.find((project) => project.id === session.projectId) ?? null,
+      return { configured: true, connected: true, status: "connected", ...(provider === "vercel" ? { logsConfigured: Boolean(session.logsToken) } : {}), project: projects.find((project) => project.id === session.projectId) ?? null,
         ...(session.teamId ? { teamId: session.teamId } : {}), checkedAt };
     });
   } catch (error) {

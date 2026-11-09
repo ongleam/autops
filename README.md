@@ -134,3 +134,9 @@ You choose the repositories and cloud projects autops can access. Do not put pas
 Disconnecting GitHub on autops signs out the current browser; it does not uninstall the GitHub App. Disconnecting a cloud provider removes that provider's saved connection for your GitHub account. To revoke the provider's app permissions as well, remove access in GitHub, Vercel, or Supabase settings.
 
 Read the [Privacy Policy](https://autops-app.vercel.app/privacy) and [Terms](https://autops-app.vercel.app/terms). For problems or suggestions, [open a GitHub issue](https://github.com/ongleam/autops/issues).
+
+### Vercel runtime log access
+
+Vercel Integration OAuth persists project and deployment access, but Vercel may deny runtime logs for Integration tokens. After selecting a project, open **Vercel server logs** on the onboarding page and connect a user-owned team API token. Autops verifies both project access and the runtime log endpoint before encrypting it in the same user-scoped server store. Tokens are never returned through MCP. API tokens can grant broader team access; select the intended team and a short expiry. Removing the log token preserves project OAuth. Both credentials must allow a project for its logs to be read.
+
+Vercel returns a bounded live log sample from the latest deployment, capped at five seconds and 256 KiB. The requested time window filters returned timestamps; it does not guarantee complete historical coverage. Supabase log access requires **Analytics: Read-only** and queries the requested bounded time window. Empty results and provider permission failures are reported separately.

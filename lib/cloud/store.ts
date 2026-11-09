@@ -3,7 +3,7 @@ import { z } from "zod/v4";
 import { CloudError, type CloudSession, type Provider } from "./client";
 
 const credentials = z.object({
-  token: z.string().min(1).max(4096), refreshToken: z.string().min(1).max(4096).optional(),
+  token: z.string().min(1).max(4096), logsToken: z.string().min(20).max(4096).optional(), refreshToken: z.string().min(1).max(4096).optional(),
   expiresAt: z.number().int().positive().nullable(), owner: z.string().regex(/^[1-9][0-9]*$/),
   teamId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).optional(), projectId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).optional(),
 });
