@@ -6,14 +6,14 @@ import { CloudError, getCloudProjects, getCloudOverview, getProjectSelection, ty
 
 const MAX_AGE = 8 * 60 * 60;
 const MESSAGES: Record<string, string> = {
-  setup_required: "서비스 연결 설정이 필요해요. 관리자에게 문의해주세요.",
-  github_required: "GitHub 계정을 먼저 연결해주세요.",
-  reconnect: "서비스 인증이 만료되었거나 해제됐어요. 다시 연결해주세요.",
-  forbidden: "현재 페이지에서 다시 시도해주세요.",
-  project_forbidden: "프로젝트 접근 권한이 없어요. 서비스에서 허용한 프로젝트를 확인해주세요.",
-  invalid_request: "요청 형식을 확인해주세요.",
-  select_project: "조회할 프로젝트를 먼저 선택해주세요.",
-  provider_unavailable: "서비스 정보를 가져오지 못했어요. 잠시 후 다시 시도해주세요.",
+  setup_required: "Service connection setup is required. Contact your administrator.",
+  github_required: "Connect your GitHub account first.",
+  reconnect: "Your service authorization has expired or was revoked. Reconnect to continue.",
+  forbidden: "Please try again from this page.",
+  project_forbidden: "You do not have access to this project. Check the projects allowed by the service.",
+  invalid_request: "Check the request format.",
+  select_project: "Select a project to inspect first.",
+  provider_unavailable: "Could not load service information. Please try again shortly.",
 };
 type Flow = { state: string; verifier: string; origin: string; owner: string };
 
