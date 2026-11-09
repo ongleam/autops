@@ -21,7 +21,7 @@ async function getConnection(provider: Provider, signal?: AbortSignal) {
   const data = await response.json();
   if (response.status === 401) return { connection: { configured: true, connected: false, project: null } as Connection, projects: [] as CloudProject[], notice: data.message as string };
   if (!response.ok) throw new Error(data.message || "Could not check the connection.");
-  if (!data.connected) return { connection: data as Connection, projects: [] as CloudProject[], notice: "" };
+  if (!data.connected) return { connection: data as Connection, projects: [] as CloudProject[], notice: data.status === "reauthorization_required" ? "Access was revoked or could not be refreshed. Reconnect this provider." : data.status === "permission_required" ? "The saved connection needs project access. Review provider permissions." : "" };
   const projectsResponse = await fetch(`${base}/projects`, { cache: "no-store", signal });
   const projectsData = await projectsResponse.json();
   if (!projectsResponse.ok) throw new Error(projectsData.message || "Could not load projects.");

@@ -89,7 +89,7 @@ DB 행, SQL, API 키, 환경 변수, 배포 실행·설정 변경은 제공하�
 
 Vercel의 [Integration Console](https://vercel.com/docs/integrations/create-integration)에서 Connectable Account Integration을 등록합니다.
 
-- **Projects: Read**, **Deployments: Read**만 허용합니다. 쓰기, 환경 변수, 도메인, 결제 권한은 요청하지 않습니다.
+- **Projects: Read**, **Deployments: Read**, and runtime log read access만 허용합니다. 쓰기, 환경 변수, 도메인, 결제 권한은 요청하지 않습니다.
 - Redirect URL: 서비스의 `/api/cloud/vercel/callback` 주소. 개발용 Integration에는 `http://localhost:3000/api/cloud/vercel/callback`을 등록합니다.
 - 설치 과정에서 접근할 프로젝트를 허용합니다. 팀 설치는 토큰 교환 응답의 `team_id`로 API 범위를 제한합니다.
 - 승인된 `VERCEL_INTEGRATION_CLIENT_ID`, `VERCEL_INTEGRATION_CLIENT_SECRET`, `VERCEL_INTEGRATION_SLUG`를 환경 설정 절차로 등록합니다.
