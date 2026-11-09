@@ -6,7 +6,8 @@ import { hasPendingMcpAuthorization, MCP_PENDING_COOKIE } from "@/lib/mcp/oauth"
 export const metadata: Metadata = { robots: { index: false, follow: false }, alternates: { canonical: "/onboarding" }, title: "Service connections — autops" };
 export const instant = false;
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ cloud?: string }> }) {
   const pending = hasPendingMcpAuthorization((await cookies()).get(MCP_PENDING_COOKIE)?.value);
-  return <GitHubOnboarding resumeChatGPT={pending} />;
+  const { cloud } = await searchParams;
+  return <GitHubOnboarding resumeChatGPT={pending} showCloud={cloud === "vercel" || cloud === "supabase"} />;
 }

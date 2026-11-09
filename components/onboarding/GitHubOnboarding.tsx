@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import GitHubIcon from "@/components/GitHubIcon";
+import ServiceIcon from "@/components/ServiceIcon";
 import type { Repository } from "@/lib/github/session";
 import CloudConnection from "./CloudConnection";
 
@@ -29,7 +30,7 @@ async function getConnection(signal?: AbortSignal) {
   return { connection: data as Connection, repositories: repositoriesData.repositories as Repository[], notice: "" };
 }
 
-export default function GitHubOnboarding({ resumeChatGPT = false }: { resumeChatGPT?: boolean }) {
+export default function GitHubOnboarding({ resumeChatGPT = false, showCloud = false }: { resumeChatGPT?: boolean; showCloud?: boolean }) {
   const [connection, setConnection] = useState<Connection | null>(null);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selected, setSelected] = useState("");
@@ -122,7 +123,7 @@ export default function GitHubOnboarding({ resumeChatGPT = false }: { resumeChat
         ) : (
           <>
             <div className="border-t border-solid border-t-[var(--line)] py-4.5 px-0 flex justify-between items-center gap-3 text-[12px] text-[#71717a] [&_strong]:text-[#27272a] [&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] max-[600px]:items-start"><span><strong>@{connection.user.login}</strong> account authorized</span><button type="button" onClick={disconnect} disabled={saving}>Disconnect</button></div>
-            {connection.repository && <div className="bg-[#f4f4f5] border border-solid border-[#e4e4e7] rounded-[5px] p-4.5 mt-0.5 mx-0 mb-6 flex items-start flex-col gap-2.5 [overflow-wrap:anywhere] [&_span]:text-[12px] [&_span]:text-[#52525b] [&_a]:mt-2" role="status"><strong>✓ {connection.repository.fullName}</strong><span>{connection.repository.defaultBranch} · {connection.repository.private ? "Private" : "Public"} repository</span><Link className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#3f3f46] text-white" prefetch={false} href={resumeChatGPT ? "/oauth/resume" : "/#chatgpt"}>{resumeChatGPT ? "Continue to ChatGPT authorization" : "Continue to ChatGPT setup"}</Link></div>}
+            {connection.repository && <div className="bg-[#f4f4f5] border border-solid border-[#e4e4e7] rounded-[5px] p-4.5 mt-0.5 mx-0 mb-6 flex items-start flex-col gap-2.5 [overflow-wrap:anywhere] [&_span]:text-[12px] [&_span]:text-[#52525b] [&_a]:mt-2" role="status"><strong>✓ {connection.repository.fullName}</strong><span>{connection.repository.defaultBranch} · {connection.repository.private ? "Private" : "Public"} repository</span><Link className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#3f3f46] text-white" prefetch={false} href={resumeChatGPT ? "/oauth/resume" : "/#chatgpt"}><ServiceIcon service="chatgpt" className="h-5 w-5 invert" />{resumeChatGPT ? "Continue to ChatGPT authorization" : "Continue to ChatGPT setup"}</Link></div>}
             <form onSubmit={save}>
               <div className="[&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] flex justify-between items-center gap-2.5 my-4 mx-0 font-semibold text-[13px] [&_button]:font-normal [&_button]:text-[#71717a]"><label htmlFor="repository-search">Repository to connect</label><button type="button" onClick={refresh} disabled={saving}>Refresh list</button></div>
               <input className="w-full bg-[#fafafa] border border-solid border-[#e4e4e7] rounded-[6px] p-[13px] [font:inherit] focus-visible:outline-[2px] focus-visible:outline-solid focus-visible:outline-[#52525b] focus-visible:outline-offset-[2px]" id="repository-search" type="search" value={query} placeholder="Search owner or repository name" onChange={(event) => setQuery(event.target.value)} />
@@ -136,9 +137,9 @@ export default function GitHubOnboarding({ resumeChatGPT = false }: { resumeChat
         {error && <div className="[&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] p-4 mt-5 bg-[#f4f4f5] text-[#b91c1c] rounded-[6px] text-[13px] leading-[1.8] [&_button]:block [&_button]:mt-2 [&_button]:text-inherit [&_button]:p-0" role="alert">{error}<button type="button" onClick={refresh} disabled={loading || saving}>Check again</button></div>}
         <p className="mt-4 mx-0 mb-0 text-[12px] text-[#52525b] leading-[1.8] empty:hidden" role="status" aria-live="polite">{notice}</p>
       </section>
-      {connection?.repository && connection.user && <details className="mt-6 rounded-[7px] border border-[var(--line)] bg-white p-5"><summary className="cursor-pointer text-sm font-semibold">Add Vercel or Supabase (optional)</summary><p className="mt-3 text-xs leading-6 text-[#71717a]">Connect a service to inspect deployments, project status, and available logs.</p><CloudConnection key={`vercel-${connection.user.id}`} provider="vercel" enabled /><CloudConnection key={`supabase-${connection.user.id}`} provider="supabase" enabled /></details>}
+      {connection?.repository && connection.user && <details open={showCloud} className="mt-6 rounded-[7px] border border-[var(--line)] bg-white p-5"><summary className="cursor-pointer text-sm font-semibold"><span className="inline-flex flex-wrap items-center gap-2 align-middle">Add <ServiceIcon service="vercel" className="h-4 w-4" /> Vercel or <ServiceIcon service="supabase" className="h-4 w-4" /> Supabase (optional)</span></summary><p className="mt-3 text-xs leading-6 text-[#71717a]">Connect a service to inspect deployments, project status, and available logs.</p><CloudConnection key={`vercel-${connection.user.id}`} provider="vercel" enabled /><CloudConnection key={`supabase-${connection.user.id}`} provider="supabase" enabled /></details>}
       {resumeChatGPT && !connection?.repository && <section className="mt-6 rounded-lg border border-[var(--line)] bg-white p-6">
-        <h2 className="text-lg font-semibold">Continue your ChatGPT connection</h2>
+        <h2 className="flex items-center gap-2 text-lg font-semibold"><ServiceIcon service="chatgpt" />Continue your ChatGPT connection</h2>
         <p className="mt-3 text-sm leading-7">Sign in with GitHub and select your repository above, then continue here.</p>
       </section>}
       <footer className="text-center text-[12px] text-[#71717a] my-6.5 mx-0 [&_strong]:font-medium [&_strong]:text-[#52525b] [&_p]:leading-[1.9] max-[600px]:text-[11px]"><strong>Connecting does not start code changes or deployments.</strong><p>Cloud connections are encrypted on the server and linked to your GitHub account. Signing in again keeps them available. Expiring Supabase access tokens are refreshed automatically.<br />Revoke app permissions in each service settings.</p></footer>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import McpUrlCopy from "@/components/McpUrlCopy";
 import GitHubIcon from "@/components/GitHubIcon";
+import ServiceIcon from "@/components/ServiceIcon";
 
 export default function Home() {
   return (
@@ -27,7 +29,7 @@ export default function Home() {
             <p className="mt-1 leading-7 text-[#71717a]">Sign in with GitHub, install the autops GitHub App for the repositories you choose, then select a repository and click Connect this repository. Vercel and Supabase are optional.</p>
           </li>
           <li className="pl-2">
-            <h3 className="font-semibold">Connect autops in ChatGPT</h3>
+            <h3 className="flex items-center gap-2 font-semibold"><ServiceIcon service="chatgpt" className="h-4 w-4" />Connect autops in ChatGPT</h3>
             <p className="mt-1 leading-7 text-[#71717a]">Follow the connection guide below to add autops in ChatGPT. You will need a ChatGPT account that allows custom MCP connections.</p>
           </li>
           <li className="pl-2">
@@ -37,11 +39,11 @@ export default function Home() {
         </ol>
         <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Show my connected GitHub account and selected repository. Explain what you can inspect with my current connections.</blockquote>
         <details id="chatgpt" open className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
-          <summary className="cursor-pointer font-medium">ChatGPT connection guide</summary>
+          <summary className="cursor-pointer font-medium"><span className="inline-flex items-center gap-2 align-middle"><ServiceIcon service="chatgpt" />ChatGPT connection guide</span></summary>
           <div className="mt-4 space-y-3 leading-7 text-[#71717a]">
             <p>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noreferrer" className="underline underline-offset-4">ChatGPT Plugins</a>, select <strong className="text-[#27272a]">+</strong> (Add), then <strong className="text-[#27272a]">Add custom MCP server</strong>. Already have autops? Refresh that connection instead.</p>
             <p>Name it <strong className="text-[#27272a]">autops</strong>, choose <strong className="text-[#27272a]">Server URL</strong>, and paste this address:</p>
-            <p className="break-all rounded-md bg-[#f4f4f5] px-3 py-2 font-mono text-xs text-[#27272a]">https://autops-app.vercel.app/api/mcp</p>
+            <McpUrlCopy />
             <p>Select <strong className="text-[#27272a]">OAuth</strong> and leave the client ID and secret empty for automatic registration. Review the notice and select <strong className="text-[#27272a]">Create as a plugin</strong>. Complete authorization with the same GitHub account and selected repository.</p>
             <p>Allow account and repository reads; cloud reads are needed only for connected providers. Source edits require separate write permission.</p>
             <p>Cannot find the add option? Ask your workspace administrator about custom MCP access. Repository missing? Return to <Link href="/onboarding" className="underline underline-offset-4">GitHub connections</Link>, use Manage repository access in GitHub, then refresh the list.</p>
