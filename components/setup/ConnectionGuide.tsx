@@ -77,7 +77,7 @@ ${projectData}
           <span className="ml-auto text-[11px] text-[#71717a] bg-[#f4f4f5] py-1.5 px-[9px] rounded-[5px] whitespace-nowrap max-[640px]:ml-12 max-[640px]:mt-[-4px]">{serverReady ? "MCP 서버 제공 중" : "서버 확인 전"}</span>
         </header>
         <p className="text-[13px] leading-[1.9] text-[#71717a] mt-5 mx-0 mb-5.5 max-[640px]:text-[12px]">
-          {serverReady ? "아래 주소를 ChatGPT에 등록해주세요. 프로젝트 확인과 연결 안내 도구부터 사용할 수 있어요." : "연결 주소를 준비했어요. 서버 제공 여부를 확인한 뒤 ChatGPT에 등록해주세요."}
+          {serverReady ? "아래 주소를 ChatGPT에 등록하세요." : "서버 확인 후 아래 주소를 등록하세요."}
         </p>
         <label className="block text-[13px] font-semibold mt-0 mx-0 mb-[9px] text-[#27272a]" htmlFor="mcp-address">MCP 연결 주소</label>
         <div className="flex gap-[9px] items-stretch max-[640px]:flex-col">
@@ -97,13 +97,13 @@ ${projectData}
           {addressCopy?.value === mcpUrl
             ? addressCopy.manual
               ? "자동 복사가 어려워 주소를 선택했어요. 직접 복사해주세요."
-              : "주소를 복사했어요. 아직 MCP가 연결된 상태는 아니에요."
-            : "주소를 복사해도 자동으로 연결되지는 않아요."}
+              : "복사 완료 · ChatGPT에 등록하세요."
+            : ""}
         </p>
         <McpConnectionSteps />
         <div className="flex items-start gap-2 bg-[#fafafa] rounded-[7px] p-3 mt-[21px] text-[#71717a] [&>span]:text-[14px] [&_p]:m-0 [&_p]:text-[11px] [&_p]:leading-[1.8]">
           <span aria-hidden="true">ⓘ</span>
-          <p>{serverReady ? "계정 조회는 OAuth 인증 후 사용할 수 있어요. 공개 데모의 소스 읽기와 API 진단은 인증 없이 사용할 수 있어요. CPU·메모리 계측과 코드 변경은 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
+          <p>{serverReady ? "계정 조회: OAuth 필요 · 공개 데모 진단: 인증 불필요 · CPU·메모리 계측 및 코드 변경 미지원" : "서버 확인 전 · ChatGPT에서 도구 호출로 연결을 확인하세요."}</p>
         </div>
       </section>
 
@@ -116,7 +116,7 @@ ${projectData}
           </div>
         </header>
         <p className="text-[13px] leading-[1.9] text-[#71717a] mt-5 mx-0 mb-5.5 max-[640px]:text-[12px]">
-          프로젝트 설정이 아래 프롬프트에 반영돼요. 실제 도구와 권한을 먼저 확인하도록 작성했어요.
+          설정이 담긴 프롬프트를 복사해 붙여넣으세요.
         </p>
         <details ref={promptDetailsRef} className="mt-4 [&_summary]:text-[12px] [&_summary]:text-[#52525b] [&_summary]:cursor-pointer [&_summary]:py-2 [&_summary]:px-0 [&[open]_summary]:mb-3">
           <summary>프롬프트 내용 보기</summary>
@@ -136,11 +136,11 @@ ${projectData}
             ? promptCopy.manual
               ? "자동 복사가 어려워 프롬프트를 선택했어요. 직접 복사해주세요."
               : "프롬프트를 복사했어요. ChatGPT에 붙여넣어주세요."
-            : "복사한 뒤 ChatGPT에 붙여넣어 다음 단계를 진행해주세요."}
+            : ""}
         </p>
         <div className="border-t border-solid border-t-[#f4f4f5] mt-5.5 pt-5 [&_strong]:text-[12px] [&_strong]:font-semibold [&_strong]:text-[#52525b] [&_p]:text-[12px] [&_p]:leading-[1.9] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[640px]:[&_p]:text-[11px]">
-          <strong>예약은 ChatGPT에서 마무리해주세요</strong>
-          <p>연결과 도구 동작을 확인한 뒤 실행 시각과 시간대를 지정해 등록해주세요. 프롬프트 복사는 예약 등록이나 실행을 의미하지 않아요.</p>
+          <strong>예약은 ChatGPT에서</strong>
+          <p>도구 연결 확인 후 시각·시간대를 지정하세요. 복사만으로 예약되지는 않아요.</p>
         </div>
       </section>
     </div>

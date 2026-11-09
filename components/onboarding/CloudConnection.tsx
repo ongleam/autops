@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import type { CloudOverview, CloudProject, Provider } from "@/lib/cloud/client";
 
 type Connection = { configured: boolean; connected: boolean; project: CloudProject | null };
@@ -123,8 +124,8 @@ export default function CloudConnection({ provider, enabled }: Props) {
   }
 
   return (
-    <section className="bg-white border border-solid border-[var(--line)] rounded-[7px] p-8 shadow-[0_12px_36px_#18181b06] max-[600px]:py-[23px] max-[600px]:px-4.5 mt-6" aria-labelledby={`${provider}-title`} aria-busy={enabled && (loading || busy)}>
-      <div className="flex gap-[15px] items-center mb-7 [&_h2]:m-0 [&_h2]:text-[20px] [&_h2]:tracking-[-.6px] [&_p]:text-[12px] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[600px]:[&_h2]:text-[18px]"><span className="grid place-items-center w-12 h-12 rounded-[12px] bg-[#f4f4f5] text-[28px] text-[#52525b]" aria-hidden="true">{provider === "vercel" ? "▲" : "ϟ"}</span><div><h2 id={`${provider}-title`}>{name} 프로젝트 연결</h2><p>{provider === "vercel" ? "프로젝트와 최근 배포 상태를 읽기 전용으로 조회해요." : "프로젝트 이름, 리전과 상태를 읽기 전용으로 조회해요."}</p></div></div>
+    <section id={provider} className="bg-white border border-solid border-[var(--line)] rounded-[7px] p-8 shadow-[0_12px_36px_#18181b06] max-[600px]:py-[23px] max-[600px]:px-4.5 mt-6" aria-labelledby={`${provider}-title`} aria-busy={enabled && (loading || busy)}>
+      <div className="flex gap-[15px] items-center mb-7 [&_h2]:m-0 [&_h2]:text-[20px] [&_h2]:tracking-[-.6px] [&_p]:text-[12px] [&_p]:text-[#71717a] [&_p]:mt-2 [&_p]:mx-0 [&_p]:mb-0 max-[600px]:[&_h2]:text-[18px]"><Image src={`/brands/${provider}.svg`} alt="" width={120} height={28} className="h-6 w-30 shrink-0 object-contain object-left" /><div><h2 id={`${provider}-title`}>{name} 프로젝트 연결</h2><p>{provider === "vercel" ? "최근 배포 · 읽기 전용" : "리전 및 상태 · 읽기 전용"}</p></div></div>
       {!enabled ? <p className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6">GitHub 계정을 먼저 연결해주세요.</p> : loading ? <p role="status">연결 상태를 확인하고 있어요…</p> : !connection ? <p>연결 상태를 다시 확인해주세요.</p> : !connection.configured ? (
         <div className="text-center py-5.5 px-3 text-[#71717a] leading-[1.9] text-[13px] [&_h3]:text-[17px] [&_h3]:text-[var(--foreground)] [&_p]:mb-6"><strong>{name} 연결을 준비하고 있어요</strong><p>관리자가 서비스 연결 설정을 완료하면 사용할 수 있어요.</p><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#d4d4d8] bg-white rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 hover:bg-[#f4f4f5]" onClick={refresh}>설정 다시 확인</button></div>
       ) : !connection.connected ? (

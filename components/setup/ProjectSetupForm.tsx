@@ -81,7 +81,7 @@ export default function ProjectSetupForm({ settings, onChange, onSaved }: Props)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       onChange(next);
       setError("");
-      setStatus("이 브라우저에 저장했어요. 다음으로 MCP 연결 안내를 확인해주세요.");
+      setStatus("저장 완료. 아래에서 ChatGPT를 연결하세요.");
       onSaved();
     } catch {
       setError("브라우저에 저장하지 못했어요. 저장소 접근을 허용하거나 다른 브라우저를 사용해주세요.");
@@ -103,27 +103,27 @@ export default function ProjectSetupForm({ settings, onChange, onSaved }: Props)
           maxLength={2048} placeholder="https://my-service.com" autoComplete="url"
           aria-describedby="service-url-help"
           onChange={(event) => update({ ...settings, serviceUrl: event.target.value })} />
-        <p id="service-url-help" className="m-0 text-[#71717a] text-[12px] leading-[1.8]">아직 공개하지 않았다면 비워두세요. 비밀번호나 토큰이 포함된 주소는 입력하지 마세요.</p>
+        <p id="service-url-help" className="m-0 text-[#71717a] text-[12px] leading-[1.8]">선택 사항 · 비밀번호나 토큰을 포함하지 마세요.</p>
       </div>
 
       <div className="flex flex-col gap-[13px] bg-[#f4f4f5] border border-solid border-[#e4e4e7] rounded-[5px] py-[17px] px-4.5 min-w-0 [&>a]:flex [&>a]:justify-between [&>a]:items-center [&>a]:gap-2.5 [&>a]:[overflow-wrap:anywhere] [&>a]:text-[14px] [&>a]:leading-[1.7] [&>a]:font-semibold [&>a]:text-[#27272a] [&>a:hover]:underline max-[540px]:p-[15px]">
         <div className="flex items-center gap-[9px] text-[#52525b] text-[13px] flex-wrap [&>span:first-child]:text-[21px] [&>span:first-child]:leading-none [&_strong]:font-semibold"><span aria-hidden="true">⑂</span><strong>데모 GitHub 저장소</strong><span className="ml-auto py-1 px-[7px] rounded-[4px] bg-[#f4f4f5] text-[#71717a] text-[10px] max-[540px]:ml-0">고정 대상</span></div>
         <a href={DEMO_PROJECT.repository} target="_blank" rel="noreferrer">ongleam / compiled-ex-project</a>
-        <div className="flex items-center gap-[9px] flex-wrap text-[#71717a] text-[11px] leading-[1.6] [&_code]:bg-[#f4f4f5] [&_code]:rounded-[4px] [&_code]:py-[3px] [&_code]:px-[7px] [&_code]:text-[11px] [&_code]:text-[#52525b] max-[540px]:gap-[7px]"><code>{DEMO_PROJECT.branch}</code><span>저장소 지정 · GitHub 계정 연결은 별도 진행</span></div>
+        <div className="flex items-center gap-[9px] flex-wrap text-[#71717a] text-[11px] leading-[1.6] [&_code]:bg-[#f4f4f5] [&_code]:rounded-[4px] [&_code]:py-[3px] [&_code]:px-[7px] [&_code]:text-[11px] [&_code]:text-[#52525b] max-[540px]:gap-[7px]"><code>{DEMO_PROJECT.branch}</code><span>계정 연결은 별도</span></div>
       </div>
 
       <fieldset className="[&_legend]:text-[14px] [&_legend]:font-semibold [&_legend]:text-[#27272a] border-0 p-0 m-0 min-w-0 [&_legend]:mb-2 [&_legend]:p-0 [&>p]:mb-3.5">
-        <legend>AI에게 맡기고 싶은 작업</legend>
-        <p className="m-0 text-[#71717a] text-[12px] leading-[1.8]">희망 범위를 프롬프트에 반영해요. 실제 권한은 연결한 도구에서 따로 설정해야 해요.</p>
+        <legend>작업 범위</legend>
+        <p className="m-0 text-[#71717a] text-[12px] leading-[1.8]">요청에 반영돼요. 실제 권한은 연결 도구에서 설정하세요.</p>
         <label className="flex items-start gap-[11px] py-3 px-0 cursor-pointer [&_input]:accent-[#2563eb] [&_input]:shrink-0 [&_input]:w-[17px] [&_input]:h-[17px] [&_input]:mt-0.5 [&_input]:mx-0 [&_input]:mb-0 [&_strong]:block [&_strong]:text-[14px] [&_strong]:leading-[1.5] [&_strong]:font-medium [&_strong]:text-[#27272a] [&_small]:block [&_small]:text-[12px] [&_small]:leading-[1.8] [&_small]:text-[#71717a] [&_small]:mt-1">
           <input type="checkbox" checked={settings.allowChanges}
             onChange={(event) => update({ ...settings, allowChanges: event.target.checked, allowDeployment: event.target.checked && settings.allowDeployment })} />
-          <span><strong>코드 개선</strong><small>진단 결과를 바탕으로 코드를 수정해요.</small></span>
+          <span><strong>코드 개선</strong><small>진단 후 코드 수정</small></span>
         </label>
         <label className="flex items-start gap-[11px] py-3 px-0 cursor-pointer [&_input]:accent-[#2563eb] [&_input]:shrink-0 [&_input]:w-[17px] [&_input]:h-[17px] [&_input]:mt-0.5 [&_input]:mx-0 [&_input]:mb-0 [&_strong]:block [&_strong]:text-[14px] [&_strong]:leading-[1.5] [&_strong]:font-medium [&_strong]:text-[#27272a] [&_small]:block [&_small]:text-[12px] [&_small]:leading-[1.8] [&_small]:text-[#71717a] [&_small]:mt-1 has-disabled:cursor-default [&:has(:disabled)_strong]:text-[#71717a] [&:has(:disabled)_small]:text-[#71717a]">
           <input type="checkbox" checked={settings.allowDeployment} disabled={!settings.allowChanges}
             onChange={(event) => update({ ...settings, allowDeployment: event.target.checked })} />
-          <span><strong>데모 환경 배포</strong><small>{settings.allowChanges ? "검증한 변경을 데모 환경에 배포해요." : "코드 개선을 선택하면 설정할 수 있어요."}</small></span>
+          <span><strong>데모 환경 배포</strong><small>{settings.allowChanges ? "검증 후 데모 배포" : "코드 개선 선택 시 사용 가능"}</small></span>
         </label>
       </fieldset>
 
