@@ -10,13 +10,15 @@ import type { RepositoryConnection } from "../github/selected-repository";
 export const ISSUER = new URL(MCP_URL).origin;
 export const ACCOUNT_SCOPE = "accounts.read";
 export const CLOUD_SCOPE = "cloud.read";
+export const CLOUD_DEPLOY_SCOPE = "cloud.deploy";
 export const REPOSITORY_READ_SCOPE = "repository.read";
 export const REPOSITORY_WRITE_SCOPE = "repository.write";
-const SCOPES = [ACCOUNT_SCOPE, CLOUD_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
+const SCOPES = [ACCOUNT_SCOPE, CLOUD_SCOPE, CLOUD_DEPLOY_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
 const scopeSchema = z.string().max(256).refine((value) => {
   const scopes = value.split(" ");
   return scopes.includes(ACCOUNT_SCOPE) && scopes.every((scope) => SCOPES.includes(scope)) &&
-    (!scopes.includes(REPOSITORY_WRITE_SCOPE) || scopes.includes(REPOSITORY_READ_SCOPE));
+    (!scopes.includes(REPOSITORY_WRITE_SCOPE) || scopes.includes(REPOSITORY_READ_SCOPE)) &&
+    (!scopes.includes(CLOUD_DEPLOY_SCOPE) || (scopes.includes(CLOUD_SCOPE) && scopes.includes(REPOSITORY_READ_SCOPE)));
 });
 const FLOW_COOKIE = "__Host-autops-mcp-flow";
 const PENDING_COOKIE = "__Host-autops-mcp-pending";
@@ -35,6 +37,7 @@ const accessSchema = z.object({
   issuer: z.literal(ISSUER), audience: z.literal(MCP_URL), scope: scopeSchema,
   token: z.string().min(1).max(2048), userId: z.number().int().positive(), repositoryId: z.number().int().positive().nullable(),
   authorizationGrant: z.enum(["authorization_code", "refresh_token", "legacy"]).default("legacy"),
+  refreshAvailable: z.boolean().optional(),
 });
 const refreshSchema = accessSchema.omit({ token: true, authorizationGrant: true }).extend({
   clientIdHash: z.string().regex(/^[a-f0-9]{64}$/), refreshToken: z.string().min(1).max(2048),
@@ -65,7 +68,8 @@ function createTokens(token: z.infer<typeof githubTokenSchema>, clientId: string
   const identity = { issuer: ISSUER, audience: MCP_URL, scope, userId, repositoryId };
   const lifetime = Math.min(3600, token.expires_in ?? 3600);
   const refreshAge = Math.min(token.refresh_token_expires_in ?? 0, MAX_REFRESH_AGE);
-  return json({ access_token: encode({ ...identity, token: token.access_token, authorizationGrant }, "access", lifetime),
+  const refreshAvailable = Boolean(refreshAllowed && token.expires_in && token.refresh_token && refreshAge > 0);
+  return json({ access_token: encode({ ...identity, token: token.access_token, authorizationGrant, refreshAvailable }, "access", lifetime),
     token_type: "Bearer", expires_in: lifetime, scope,
     ...(refreshAllowed && token.expires_in && token.refresh_token && refreshAge > 0 ? {
       refresh_token: encode({ ...identity, clientIdHash: getClientIdHash(clientId), refreshToken: token.refresh_token }, "refresh", refreshAge),
@@ -264,9 +268,17 @@ export class McpAuthorizationError extends Error {
   constructor(public scope: string) { super("Connect or reauthorize autops with the requested account and repository permissions."); }
 }
 
-export async function getCloudOwner(request: Request | undefined) {
+export async function getAccountOwner(request: Request | undefined) {
   const access = getAccess(request);
-  if (!access || !access.scope.split(" ").includes(CLOUD_SCOPE)) throw new McpAuthorizationError(`${ACCOUNT_SCOPE} ${CLOUD_SCOPE}`);
+  if (!access) throw new McpAuthorizationError(ACCOUNT_SCOPE);
+  const user = await createGitHubClient(access.token).getUser();
+  if (user.id !== access.userId) throw new McpAuthorizationError(ACCOUNT_SCOPE);
+  return String(user.id);
+}
+
+export async function getCloudOwner(request: Request | undefined, requiredScope = CLOUD_SCOPE) {
+  const access = getAccess(request);
+  if (!access || !access.scope.split(" ").includes(CLOUD_SCOPE) || !access.scope.split(" ").includes(requiredScope)) throw new McpAuthorizationError(`${ACCOUNT_SCOPE} ${CLOUD_SCOPE}${requiredScope === CLOUD_DEPLOY_SCOPE ? ` ${CLOUD_DEPLOY_SCOPE}` : ""}`);
   const user = await createGitHubClient(access.token).getUser();
   if (user.id !== access.userId) throw new McpAuthorizationError(`${ACCOUNT_SCOPE} ${CLOUD_SCOPE}`);
   return String(user.id);
@@ -296,8 +308,11 @@ export async function getConnectedAccounts(request: Request | undefined) {
   if (!appId) throw new Error("setup_required");
   const repositories = await client.getRepositories(appId);
   return { github: { connected: true, user, repository: repositories.find((repo) => repo.id === access.repositoryId) ?? null, repositories },
-    permissions: { repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
-    authorization: { grantType: access.authorizationGrant, expiresAt: new Date(access.expiresAt * 1000).toISOString() },
+    permissions: { cloudDeploy: access.scope.split(" ").includes(CLOUD_DEPLOY_SCOPE), repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
+    authorization: { grantType: access.authorizationGrant, expiresAt: new Date(access.expiresAt * 1000).toISOString(),
+      refreshAvailable: access.refreshAvailable ?? null, automaticRenewalObserved: access.authorizationGrant === "refresh_token",
+      action: access.refreshAvailable === undefined ? "Reconnect the existing autops connection to replace this legacy grant. Automatic renewal has not been verified."
+        : access.refreshAvailable ? "The client can renew with its refresh token; a refresh_token grant confirms an observed renewal." : "GitHub did not provide renewable credentials. Reconnect after expiry." },
     checkedAt: new Date().toISOString(),
     cloudAccounts: access.scope.split(" ").includes(CLOUD_SCOPE)
       ? { status: "checked", vercel: await getCloudConnectionStatus(String(user.id), "vercel"), supabase: await getCloudConnectionStatus(String(user.id), "supabase") }

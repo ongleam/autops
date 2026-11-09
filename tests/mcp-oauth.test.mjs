@@ -77,6 +77,7 @@ test("expiring GitHub grants receive an opaque client-bound refresh token", asyn
   expect(data.expires_in).toBe(3600);
   expect(data.refresh_token_expires_in).toBe(15897600);
   expect(unseal(data.access_token, "access").authorizationGrant).toBe("authorization_code");
+  expect(unseal(data.access_token, "access").refreshAvailable).toBe(true);
   expect(data.refresh_token).not.toContain("upstream-refresh");
   expect(data.access_token).not.toContain("upstream-access");
   expect(unseal(data.refresh_token, "refresh")).toEqual({ issuer: ISSUER, audience: `${ISSUER}/api/mcp`, scope: boundScope,

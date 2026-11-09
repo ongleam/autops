@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 import { CloudError, type CloudSession, type Provider } from "./client";
 
 const credentials = z.object({
+  deploymentProjectId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).optional(),
   token: z.string().min(1).max(4096), logsToken: z.string().min(20).max(4096).optional(), refreshToken: z.string().min(1).max(4096).optional(),
   expiresAt: z.number().int().positive().nullable(), owner: z.string().regex(/^[1-9][0-9]*$/),
   teamId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).optional(), projectId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).optional(),
@@ -42,7 +43,7 @@ function selector(owner: string, provider: Provider) {
   if (!/^[1-9][0-9]*$/.test(owner)) throw new CloudError(401, "github_required");
   return `github_user_id=eq.${owner}&provider=eq.${provider}`;
 }
-async function database(path: string, method = "GET", body?: unknown) {
+export async function database(path: string, method = "GET", body?: unknown) {
   const cfg = config();
   const response = await fetch(`${cfg.url}/rest/v1/${path}`, {
     method, headers: { apikey: cfg.secretKey, Authorization: `Bearer ${cfg.secretKey}`, "Content-Type": "application/json",

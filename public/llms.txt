@@ -4,7 +4,7 @@
 
 Current capabilities: connect a GitHub account and selected repository, read authorized source files through the ChatGPT MCP connection, make reviewed single-file source updates with explicit write authorization, and view selected Vercel or Supabase project status. Live API diagnostics work only for the public compiled-ex-project demo.
 
-The homepage explains why autops exists and how to start: connect a project, connect autops in ChatGPT, and ask about the service. Automatic deployment and scheduling are not available. Billing and time-based access limits are not active.
+The homepage explains why autops exists and how to start: connect a project, connect autops in ChatGPT, and ask about the service. Deployment requests require cloud.deploy and separate project-specific approval. Demo diagnostic history and comparison are available. Scheduling is owned by the calling client, such as ChatGPT or Claude; autops has no scheduler or cron jobs. Billing and time-based access limits are not active.
 
 ## Public pages
 

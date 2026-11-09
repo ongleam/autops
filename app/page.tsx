@@ -77,7 +77,7 @@ export default function Home() {
       </section>
       <section className="border-t border-[var(--line)] pt-4" aria-labelledby="today-title">
         <h2 id="today-title" className="text-sm font-semibold">Available today</h2>
-        <p className="mt-2 text-sm leading-7 text-[#71717a]">Read source files, inspect connected services, and request source edits with write permission. API diagnostics support the public demo only. Automatic deployment and scheduling are not available yet.</p>
+        <p className="mt-2 text-sm leading-7 text-[#71717a]">Read source files, inspect services, save and compare demo diagnostics, and request source edits or deployments with explicit permission. Scheduling is managed by your calling app, such as ChatGPT or Claude; autops does not manage schedules.</p>
         <a href="https://github.com/ongleam/autops#readme" className="mt-3 inline-flex min-h-11 items-center text-sm underline underline-offset-4">Read the full guide <span className="ml-2" aria-hidden="true">→</span></a>
       </section>
       <footer className="mt-4 flex gap-5 text-xs text-[#71717a]">

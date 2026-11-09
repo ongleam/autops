@@ -27,7 +27,7 @@ export default function VercelLogAccess({ configured, projectSelected, onSaved }
   return <details className="mt-6 border-t border-solid border-[#e4e4e7] pt-4">
     <summary className="cursor-pointer text-sm font-medium">Vercel server logs · {configured ? "Token saved" : "Connect token"}</summary>
     <p className="mt-3 text-sm leading-6">Vercel Integration OAuth does not grant runtime log access. Connect a team API token once to read logs through autops MCP. It is encrypted on the server for your GitHub account and never returned to ChatGPT.</p>
-    <p className="mt-2 text-sm leading-6">API tokens may allow more than read access. Select only your Vercel team and a short expiry in <a className="underline" href="https://vercel.com/account/settings/tokens" target="_blank" rel="noopener noreferrer">Vercel token settings</a>. Autops uses this token only to verify project access and read logs.</p>
+    <p className="mt-2 text-sm leading-6">API tokens may allow more than read access. Select only your Vercel team and a short expiry in <a className="underline" href="https://vercel.com/account/settings/tokens" target="_blank" rel="noopener noreferrer">Vercel token settings</a>. Autops uses this token to verify project access and read logs. Deployment use requires separate project-specific approval below.</p>
     <form onSubmit={save} className="mt-3 flex flex-col gap-3">
       <label htmlFor="vercel-logs-token" className="text-sm">Vercel API token</label>
       <input id="vercel-logs-token" type="password" autoComplete="off" spellCheck={false} value={token} onChange={(event) => setToken(event.target.value)} minLength={20} maxLength={4096} required disabled={busy} className="rounded-md border border-solid border-[#d4d4d8] p-3" />

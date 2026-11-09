@@ -103,9 +103,9 @@ If you have connected a different repository, autops reports that these diagnost
 ## Current limits
 
 - Live API diagnostics support the public demo project only. General source inspection and connected cloud status or log reads are separate capabilities.
-- CPU, memory, and page time-to-first-byte measurements are not available through the demo diagnostics. The small sample is not a production performance benchmark.
+- Demo CPU and memory are measured in the target process and can include concurrent work. Page TTFB is a server-side first-body-chunk probe. The small sample is not a production performance benchmark.
 - Source updates support one existing UTF-8 source file at a time, up to 100 KB. File creation, deletion, secret files, and workflow files are not supported.
-- autops does not run tests or verify a deployment as part of saving a source change. Automatic deployment, persistent diagnostic history, and built-in scheduling are not available.
+- autops does not run tests or verify a deployment as part of saving a source change. Deployment requests require cloud.deploy and explicit approval for the linked Vercel project. Diagnostic history is saved per GitHub owner and repository. Scheduling belongs to the calling client (ChatGPT or Claude); autops has no scheduler or cron jobs.
 - Cloud logs cover a bounded recent window, up to 60 minutes and 100 entries. Results depend on your provider permissions, log retention, and available data.
 
 ## If something does not connect
@@ -133,3 +133,11 @@ Read the [Privacy Policy](https://autops-app.vercel.app/privacy) and [Terms](htt
 Vercel Integration OAuth persists project and deployment access, but Vercel may deny runtime logs for Integration tokens. After selecting a project, open **Vercel server logs** on the onboarding page and connect a user-owned team API token. Autops verifies both project access and the runtime log endpoint before encrypting it in the same user-scoped server store. Tokens are never returned through MCP. API tokens can grant broader team access; select the intended team and a short expiry. Removing the log token preserves project OAuth. Both credentials must allow a project for its logs to be read.
 
 With a verified log API token, Vercel queries the requested recent time window through its Observability API. Pagination and excluded intervals are reported. A project-scoped token denied history access can use a 15-second, 256 KiB live sample from the latest deployment; its coverage is explicitly incomplete. Without this token, Integration OAuth may be denied; a separately authorized fallback remains explicit. Supabase log access requires **Analytics: Read-only** and queries the requested bounded time window. Empty results and provider permission failures are reported separately.
+
+### Saved diagnostics and controlled deployments
+
+Use `diagnose_project` with `stage: before` or `stage: after` for the supported demo. It saves a diagnostic ID. Use `get_diagnostic` to retrieve it, `list_diagnostics` for recent runs, and `compare_diagnostics` with two distinct IDs to compare API latency, target process CPU/memory, page TTFB and correctness. Mismatched measurement conditions or product results are reported as incomparable. Missing resource telemetry and unverified deployment commits remain explicit; three requests per mode do not establish a stable improvement.
+
+For deployment requests, select the Vercel project linked to your selected GitHub repository. Under **Vercel deployments**, explicitly approve use of the connected API token for that project, then reconnect your existing MCP connection with `cloud.deploy`. Run functional checks before asking for `deploy_project` with the exact current commit SHA. Preview is the default; production must be explicitly requested. Poll `get_deployment_status` with the deployment ID and expected commit. A ready build is separate from passing tests and improving performance. Replacing or removing the API token clears project deployment approval.
+
+Recurring execution is managed in your calling app's scheduling feature, such as ChatGPT or Claude. autops exposes callable tools and does not create or operate a scheduler.

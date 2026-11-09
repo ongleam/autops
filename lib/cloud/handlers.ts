@@ -75,7 +75,7 @@ async function callback(request: NextRequest, provider: Provider, config: CloudC
           const projects = await getCloudProjects(provider, session);
           const previous = await readConnection(owner, provider);
           const previousProject = previous?.session?.projectId;
-          await saveConnection(provider, { ...session, ...(provider === "vercel" && previous?.session?.logsToken ? { logsToken: previous.session.logsToken } : {}), ...(projects.some((project) => project.id === previousProject) ? { projectId: previousProject } : {}) });
+          await saveConnection(provider, { ...session, ...(provider === "vercel" && previous?.session?.logsToken ? { logsToken: previous.session.logsToken, deploymentProjectId: previous.session.deploymentProjectId } : {}), ...(projects.some((project) => project.id === previousProject) ? { projectId: previousProject } : {}) });
           result = "connected";
         } catch (error) { result = error instanceof CloudError && error.code === "storage_unavailable" ? "storage_unavailable" : "authorization_failed"; }
       }
@@ -136,9 +136,21 @@ export async function handleCloudRequest(request: NextRequest, providerName: str
       return protect(NextResponse.json(status));
     }
     const result = await withCloudConnection(owner, provider, async (session, revision) => {
+      if (provider === "vercel" && action === "deployment-access" && request.method === "POST") {
+        if (!request.headers.get("content-type")?.startsWith("application/json")) throw new CloudError(400, "invalid_request");
+        const text = await request.text();
+        if (text.length > 512) throw new CloudError(400, "invalid_request");
+        let body: unknown; try { body = JSON.parse(text); } catch { throw new CloudError(400, "invalid_request"); }
+        const { enabled, projectId } = z.object({ enabled: z.boolean(), projectId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/) }).strict().parse(body);
+        if (projectId !== session.projectId) throw new CloudError(409, "connection_changed");
+        if (enabled && (!session.projectId || !session.logsToken)) throw new CloudError(403, "deployment_token_required");
+        if (enabled) getProjectSelection({ projectId: session.projectId }, await getCloudProjects("vercel", { ...session, token: session.logsToken! }));
+        await saveConnection(provider, { ...session, deploymentProjectId: enabled ? session.projectId : undefined }, revision);
+        return { deploymentsEnabled: enabled };
+      }
       if (provider === "vercel" && action === "logs-token" && ["POST", "DELETE"].includes(request.method)) {
         if (request.method === "DELETE") {
-          await saveConnection(provider, { ...session, logsToken: undefined }, revision);
+          await saveConnection(provider, { ...session, logsToken: undefined, deploymentProjectId: undefined }, revision);
           return { saved: false };
         }
         if (!request.headers.get("content-type")?.startsWith("application/json")) throw new CloudError(400, "invalid_request");
@@ -148,7 +160,7 @@ export async function handleCloudRequest(request: NextRequest, providerName: str
         const input = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{20,4096}$/) }).strict().safeParse(body);
         if (!input.success) throw new CloudError(400, "invalid_request");
         await verifyVercelLogsToken(session, input.data.token);
-        await saveConnection(provider, { ...session, logsToken: input.data.token }, revision);
+        await saveConnection(provider, { ...session, logsToken: input.data.token, deploymentProjectId: undefined }, revision);
         return { saved: true };
       }
       if (request.method === "GET" && action === "overview") return getCloudOverview(provider, session);

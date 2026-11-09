@@ -62,3 +62,17 @@ test("different product results fail the correctness comparison", async () => {
   const result = await diagnoseProject(async (url) => Response.json({ products: [{ ...product, price: new URL(url).searchParams.get("mode") === "joined" ? 999 : 100 }], databaseRequests: 1, elapsedMs: 1, requestId: "fixture" }), async () => ({ commit: "a".repeat(40), fileSha: "b".repeat(40), path: "lib/products.ts", content: "public source" }));
   expect(result.sameProducts).toBe(false);
 });
+
+
+test("target telemetry and deployed commit are measured without using autops process metrics", async () => {
+  const sha = "a".repeat(40);
+  const result = await diagnoseProject(async url => new URL(url).pathname === "/" ? new Response("<html>page</html>") : Response.json({
+    products: [product], databaseRequests: 1, elapsedMs: 1, requestId: "fixture", telemetry: { cpuMs: 12, heapUsedMiB: 30, rssMiB: 90, definition: "Target process" },
+    deployment: { commit: sha, id: "dpl_fixture" },
+  }), async () => ({ commit: sha, fileSha: "b".repeat(40), path: "lib/products.ts", content: "public source" }));
+  expect(result.cpu.status).toBe("measured");
+  expect(result.cpu.modes.joined.cpuMs).toBe(12);
+  expect(result.memory.modes.joined.heapUsedMiB).toBe(30);
+  expect(result.pageTtfb.status).toBe("measured");
+  expect(result.deployedCommitVerified).toBe(true);
+});

@@ -39,7 +39,7 @@ async function getVercelLogHistory(session: CloudSession, project: CloudProject,
   if (response.status === 401) throw new CloudError(403, "logs_token_invalid");
   if (response.status === 403) throw new CloudError(403, "logs_permission_required");
   if (response.status === 402) throw new CloudError(402, "logs_plan_required");
-  if (!response.ok) throw new CloudError(502, "logs_unavailable");
+  if (!response.ok) throw new CloudError(502, `logs_query_http_${response.status}`);
   const data = z.object({ events: z.array(z.record(z.string(), z.unknown())), pagination: z.object({ hasMore: z.boolean() }),
     meta: z.object({ excludedIntervals: z.array(z.object({ start: z.string(), end: z.string() })).optional() }).optional() }).parse(await response.json());
   const entries = data.events.slice(0, limit).map(entry => JSON.parse(redact(JSON.stringify(entry), [session.token, session.logsToken!])));

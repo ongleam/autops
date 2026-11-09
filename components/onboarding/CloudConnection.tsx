@@ -1,12 +1,13 @@
 "use client";
 
+import VercelDeploymentAccess from "./VercelDeploymentAccess";
 import VercelLogAccess from "./VercelLogAccess";
 
 import { useEffect, useState } from "react";
 import ServiceIcon from "@/components/ServiceIcon";
 import type { CloudOverview, CloudProject, Provider } from "@/lib/cloud/client";
 
-type Connection = { configured: boolean; connected: boolean; status?: string; logsConfigured?: boolean; project: CloudProject | null };
+type Connection = { configured: boolean; connected: boolean; status?: string; logsConfigured?: boolean; deploymentsEnabled?: boolean; project: CloudProject | null };
 type Props = { provider: Provider; enabled: boolean };
 const LABELS = { vercel: "Vercel", supabase: "Supabase" };
 const CALLBACK_MESSAGES: Record<string, string> = {
@@ -147,6 +148,7 @@ export default function CloudConnection({ provider, enabled }: Props) {
             <div className="flex gap-4 items-center justify-between mt-3 max-[600px]:items-stretch max-[600px]:flex-col"><button type="submit" className="inline-flex items-center justify-center gap-3 border border-solid border-[#18181b] bg-[#18181b] rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 max-[600px]:min-h-11 hover:bg-[#3f3f46] text-white" disabled={!selected || busy}>Select this project</button></div>
           </form>
           {provider === "vercel" && <VercelLogAccess configured={Boolean(connection.logsConfigured)} projectSelected={Boolean(connection.project)} onSaved={refresh} />}
+          {provider === "vercel" && connection.project && <VercelDeploymentAccess project={connection.project} enabled={Boolean(connection.deploymentsEnabled)} tokenConfigured={Boolean(connection.logsConfigured)} onSaved={refresh} />}
           {connection.project && <div className="bg-[#f4f4f5] border border-solid border-[#e4e4e7] rounded-[5px] p-3 mt-3 mx-0 mb-3 flex items-start flex-col gap-2.5 [overflow-wrap:anywhere] [&_span]:text-[12px] [&_span]:text-[#52525b] [&_a]:mt-2"><strong>✓ {connection.project.name}</strong><span>{connection.project.id}</span><button type="button" className="inline-flex items-center justify-center gap-3 border border-solid border-[#d4d4d8] bg-white rounded-[5px] py-[9px] px-3 whitespace-nowrap text-[12px] font-medium min-h-9 max-[600px]:min-h-11 hover:bg-[#f4f4f5]" onClick={getOverview} disabled={busy}>Refresh project status</button></div>}
           {overview && <div className="text-[13px] border-t border-solid border-t-[var(--line)] pt-4 [&_dl]:grid [&_dl]:grid-cols-[90px_minmax(0,1fr)] [&_dl]:gap-3 [&_dt]:text-[#71717a] [&_dd]:m-0 [&_dd]:[overflow-wrap:anywhere]" role="status"><dl>
             <dt>Project</dt><dd>{overview.project.name}</dd>
