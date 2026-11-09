@@ -114,7 +114,8 @@ async function getLogTokenProjects(session: CloudSession, token: string) {
 export async function verifyVercelLogsToken(session: CloudSession, token: string) {
   if (!session.projectId) throw new CloudError(400, "select_project");
   getProjectSelection({ projectId: session.projectId }, await getLogTokenProjects(session, token));
-  await getVercelLogs({ ...session, logsToken: token }, getProjectSelection({ projectId: session.projectId }, await getCloudProjects("vercel", session)), new Date(Date.now() - 60_000), 1);
+  const result = await getVercelLogs({ ...session, logsToken: token }, getProjectSelection({ projectId: session.projectId }, await getCloudProjects("vercel", session)), new Date(Date.now() - 60_000), 1);
+  if ("status" in result && result.status === "unavailable") throw new CloudError(403, "logs_permission_required");
 }
 
 export async function getUserProjectLogs(owner: string, input: z.infer<typeof cloudLogsInput>) {
