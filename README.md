@@ -98,3 +98,14 @@ Supabase 조직 설정의 [Platform OAuth Apps](https://supabase.com/docs/guides
 
 API 응답은 필요한 필드만 포함하며 토큰·원본 공급자 오류를 반환하지 않습니다. 설정 전에는 준비 중 상태를 표시하고 연결을 가장하지 않습니다.
 `bun test tests`는 외부 HTTP 응답을 격리한 인증·권한·조회 테스트입니다. 실제 승인은 OAuth 앱 설정 후 두 서비스에서 각각 확인해야 합니다.
+
+## 실제 MCP 저장소 읽기·API 진단
+
+공개 MCP는 `ongleam/compiled-ex-project` 하나만 대상으로 합니다. GitHub App 설치 토큰을 해당 저장소의 Contents·Metadata 읽기로 제한하고,
+README·package.json·lib/products.ts·app/api/products/route.ts만 실제 커밋에서 읽습니다. 저장소가 비공개로 바뀌면 공개 MCP의 소스 읽기를 거부합니다.
+다른 온보딩 사용자의 저장소·세션·토큰을 이 공개 MCP로 전달하지 않습니다.
+
+- `get_repository_file`: 허용 파일의 실제 소스·커밋·파일 SHA·출처 반환.
+- `diagnose_project`: 실제 배포된 상품 API의 두 기존 조회 방식을 limit 2로 각각 3회 교차 호출. HTTP 응답 시간 p50/p95·실패 수·서버가 보고한 DB HTTP 요청 수·상품 결과 동일성 반환.
+- CPU·메모리·페이지 TTFB와 대상 서비스 배포 커밋은 미검증입니다. 콜드 스타트를 제외하지 않으며 표본이 작습니다.
+- 동일 배포 내 기존 조회 방식 비교이며 코드 변경 전후 개선, 영속 진단 저장, 자동 수정·배포·예약 기능은 아닙니다.
