@@ -50,7 +50,13 @@ async function getVercelLogHistory(session: CloudSession, project: CloudProject,
 
 async function getVercelLogs(session: CloudSession, project: CloudProject, start: Date, limit: number) {
   if (!session.teamId) throw new CloudError(403, "team_required");
-  if (session.logsToken) return getVercelLogHistory(session, project, start, limit);
+  if (session.logsToken) {
+    try { return await getVercelLogHistory(session, project, start, limit); }
+    catch (error) {
+      if (!(error instanceof CloudError) || error.code !== "logs_permission_required") throw error;
+      // Project-scoped tokens can use the deployment stream when history access is denied.
+    }
+  }
   const overview = await getCloudOverview("vercel", { ...session, projectId: project.id });
   if (!overview.deployment) throw new CloudError(404, "deployment_not_found");
   const deploymentId = z.string().regex(/^[a-zA-Z0-9_-]{1,256}$/).parse(overview.deployment.id);

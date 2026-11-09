@@ -49,7 +49,7 @@ beforeEach(() => {
     if (providerStatus !== 200) return Response.json({}, {status: providerStatus});
     if (url.pathname === "/v1/observability/events") {
       logReads++;
-      if (String(init.headers?.Authorization).includes("forbidden-vercel-log-token")) return Response.json({}, {status:403});
+      if (/forbidden-vercel-log-token|live-only-vercel-log-token/.test(String(init.headers?.Authorization))) return Response.json({}, {status:403});
       expect(JSON.parse(init.body).scope.projectIds).toEqual(["project_a"]);
       return Response.json({events:[{message:"Bearer cloud-1",timestamp:new Date().toISOString()}],pagination:{hasMore:false}});
     }
@@ -182,4 +182,12 @@ test("log API denial cannot be saved as verified token access", async () => {
   const stored=await readConnection("1","vercel");
   expect(stored.session.logsToken).toBeUndefined();
   expect(stored.session.token).toBe("cloud-1");
+});
+
+test("project-scoped log access reports a bounded live sample when history access is denied", async () => {
+  await saveConnection("vercel",session("1",{logsToken:"live-only-vercel-log-token-12345"}));
+  const result=await getUserProjectLogs("1",cloudLogsInput.parse({provider:"vercel",limit:5}));
+  expect(result.coverage.mode).toBe("live_sample");
+  expect(result.entries).toHaveLength(1);
+  expect(result.coverage.windowLimitations).toContain("not complete historical coverage");
 });
