@@ -1,19 +1,39 @@
-# AUTOPS
+# autops
 
-Next.js App Router · TypeScript · Tailwind CSS 기반 해커톤 기본 페이지입니다.
+autops는 서비스의 코드와 연결 상태를 살펴보고, AI와 함께 개선 지점을 이해하도록 돕는 프로젝트입니다. 핵심 아이디어는 **recursive**입니다. 현재 상태를 확인하고, 근거를 읽고, 작은 변경을 검증한 뒤 다시 확인하는 과정을 반복합니다. 현재 제공 범위는 GitHub 저장소 연결, Vercel·Supabase 프로젝트의 읽기 전용 상태 조회, ChatGPT용 MCP 도구, 공개 데모 API 진단입니다. 자동 코드 수정이나 자동 배포는 제공하지 않습니다.
 
-## 실행
+## 구성과 사용 흐름
 
-Node.js 20.9 이상과 Bun을 사용합니다.
+1. 웹사이트에서 GitHub로 로그인하고 GitHub App이 접근할 저장소를 선택합니다.
+2. 필요하면 Vercel 또는 Supabase 프로젝트를 각각 연결해 기본 상태를 조회합니다. 이 웹 연결은 ChatGPT MCP 연결과 별개입니다.
+3. ChatGPT에서 autops 플러그인을 OAuth로 연결하고 계정·저장소 접근을 승인합니다.
+4. MCP 도구로 저장소 파일을 읽거나, 지원되는 공개 데모의 상품 API를 진단합니다. 결과를 검토한 뒤 다음 확인을 반복합니다.
+
+웹은 Next.js App Router·React·TypeScript·Tailwind CSS로 구성됩니다. `app/`은 페이지와 API 경로, `components/`는 UI, `lib/github/`·`lib/cloud/`는 외부 서비스 연결, `lib/mcp/`는 MCP와 OAuth, `lib/projects/`는 프로젝트 맥락과 데모 진단을 담당합니다. 실제 서비스 주소는 [autops](https://autops-app.vercel.app/)입니다.
+
+## 로컬 셋업
+
+Node.js 20.9 이상과 Bun 1.4.4가 필요합니다. 저장소를 내려받은 뒤 의존성을 설치합니다.
 
 ```sh
+git clone https://github.com/ongleam/autops.git
+cd autops
 bun install --frozen-lockfile
+```
+
+`.env.example`에 나열된 서버 전용 변수를 승인된 환경 설정 절차에 따라 로컬 환경에 등록합니다. `.env.example` 자체에 비밀 값을 쓰거나 커밋하지 마세요. GitHub 연결에는 `GITHUB_APP_ID`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_SESSION_SECRET`이 필요합니다. `GITHUB_APP_PRIVATE_KEY`는 실제 줄바꿈이 있는 PEM, `GITHUB_SESSION_SECRET`은 32자 이상의 환경별 무작위 값입니다. Vercel 연결은 `VERCEL_INTEGRATION_*` 세 변수, Supabase 연결은 `SUPABASE_OAUTH_*` 두 변수를 추가로 사용합니다. 해당 공급자를 설정하지 않으면 그 연결 UI는 준비 중 상태로 표시됩니다.
+
+GitHub App의 권한·Callback/Setup URL과 선택형 Vercel·Supabase OAuth 앱 설정은 아래 절을 따릅니다. 로컬 개발용 OAuth Callback은 각 공급자 설정에 `http://localhost:3000` 기준으로 등록해야 합니다.
+
+```sh
 bun run dev
 ```
 
-[로컬 페이지](http://localhost:3000)를 엽니다.
+[http://localhost:3000](http://localhost:3000)에서 홈을 열고 `/login` → `/onboarding` 흐름을 확인합니다. MCP 엔드포인트는 `/api/mcp`입니다. 실제 OAuth 연결과 외부 서비스 조회는 앱 등록, 허용 저장소·프로젝트, 유효한 인증 값이 있어야 작동합니다.
 
-## 검증 및 프로덕션 실행
+## 검증과 배포
+
+저장소의 lint 명령은 ESLint와 Stylelint를 실행합니다. 추가 스크립트는 다음과 같습니다.
 
 ```sh
 bun run lint
@@ -22,7 +42,7 @@ bun run build
 bun run start
 ```
 
-현재 화면은 반응형 헤더와 GitHub 링크로 구성되어 있습니다.
+Vercel 배포 설정은 `vercel.json`에 있으며 Bun 고정 lockfile 설치와 `bun run build`를 사용합니다. 프로덕션 환경에도 필요한 서버 전용 변수를 등록하고 OAuth 리디렉션 주소를 배포 도메인으로 설정해야 합니다. 배포 후 로그인·저장소 선택·MCP 연결은 실제 계정에서 확인합니다.
 
 ## GitHub 저장소 온보딩
 
