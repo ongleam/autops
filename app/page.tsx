@@ -38,7 +38,8 @@ export default function Home() {
         const section = document.getElementById(step.id);
         return section && section.getBoundingClientRect().top <= window.innerHeight * 0.3;
       });
-      setActive(current?.id ?? steps[0].id);
+      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      setActive(atBottom ? steps[steps.length - 1].id : current?.id ?? steps[0].id);
     };
     const scheduleUpdate = () => {
       cancelAnimationFrame(frame);
