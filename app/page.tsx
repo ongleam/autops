@@ -33,7 +33,7 @@ export default function Home() {
   const origin = useSyncExternalStore(
     () => () => {},
     () => window.location.origin,
-    () => "https://compiled-17.vercel.app",
+    () => "https://autops-app.vercel.app",
   );
   const updateSettings = useCallback((next: ProjectSettings) => {
     setSettings(next);

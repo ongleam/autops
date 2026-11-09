@@ -29,7 +29,7 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       assert.equal(result.isError, undefined);
       const context = result.structuredContent as Record<string, unknown>;
       assert.equal(context.repository, "https://github.com/ongleam/compiled-ex-project");
-      assert.equal(context.mcpUrl, "https://compiled-17.vercel.app/api/mcp");
+      assert.equal(context.mcpUrl, "https://autops-app.vercel.app/api/mcp");
       assert.deepEqual(context.capabilities, {
         context: true,
         diagnostics: false,

@@ -81,6 +81,9 @@ const handler = createMcpHandler(() => {
 
 export async function handleMcpRequest(request: Request): Promise<Response> {
   const allowedHosts = [
+    "autops-app.vercel.app",
+    "autops-ongleams-projects-449736e9.vercel.app",
+    "autops-git-main-ongleams-projects-449736e9.vercel.app",
     "compiled-17.vercel.app",
     "compiled-17-ongleams-projects-449736e9.vercel.app",
   ];

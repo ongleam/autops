@@ -1,4 +1,4 @@
-export const MCP_URL = "https://compiled-17.vercel.app/api/mcp";
+export const MCP_URL = "https://autops-app.vercel.app/api/mcp";
 
 export const MAINTENANCE_PROMPT = `연결된 Compiled 프로젝트를 확인하고 백엔드 문제 하나를 개선해주세요.
 대상 저장소: https://github.com/ongleam/compiled-ex-project
