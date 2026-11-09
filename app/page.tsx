@@ -1,17 +1,18 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import GitHubIcon from "@/components/GitHubIcon";
 
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-6 sm:py-8">
       <header className="flex items-center justify-between">
         <Logo className="text-xl" />
-        <Link href="/login" className="inline-flex min-h-11 items-center text-sm text-[#71717a] hover:text-[#2563eb]">Sign in</Link>
+        <Link href="/login" className="inline-flex min-h-11 items-center gap-2 text-sm text-[#71717a] hover:text-[#2563eb]"><GitHubIcon className="h-4 w-4" />Sign in</Link>
       </header>
       <section className="py-16 sm:py-20" aria-labelledby="landing-title">
         <h1 id="landing-title" className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Build alone.<br />Operate with AI.</h1>
         <p className="mt-5 max-w-lg text-sm leading-7 text-[#71717a]">Connect your code and services to ChatGPT. Understand what is happening and decide what to improve next.</p>
-        <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]">Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
+        <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]"><GitHubIcon className="mr-3 h-5 w-5" />Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
       </section>
       <section className="border-t border-[var(--line)] py-10" aria-labelledby="why-title">
         <h2 id="why-title" className="text-xl font-semibold tracking-tight">Why we built autops</h2>
