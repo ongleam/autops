@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import GitHubOnboarding from "@/components/onboarding/GitHubOnboarding";
 import { hasPendingMcpAuthorization, MCP_PENDING_COOKIE } from "@/lib/mcp/oauth";
 
-export const metadata: Metadata = { title: "Service connections — autops" };
+export const metadata: Metadata = { robots: { index: false, follow: false }, alternates: { canonical: "/onboarding" }, title: "Service connections — autops" };
 export const instant = false;
 
 export default async function OnboardingPage() {

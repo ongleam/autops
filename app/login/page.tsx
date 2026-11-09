@@ -5,7 +5,7 @@ import { createGitHubClient } from "@/lib/github/client";
 import { getCookieName, getSession, type GitHubSession } from "@/lib/github/session";
 
 export const instant = false;
-export const metadata = { title: "GitHub sign-in — autops", referrer: "same-origin" };
+export const metadata = { robots: { index: false, follow: false }, alternates: { canonical: "/login" }, title: "GitHub sign-in — autops", referrer: "same-origin" };
 
 async function hasGitHubSession() {
   const secret = process.env.GITHUB_SESSION_SECRET;

@@ -1,0 +1,17 @@
+# autops
+
+> autops is an AI MCP for solo builders, non-developers, and vibe coders who need to understand and operate the services they build. Its goal is to take on DevOps work as a solo-built service grows toward 100,000 monthly active users; that scale is a vision, not a verified current capability.
+
+Current capabilities: connect a GitHub account and selected repository, read authorized source files through the ChatGPT MCP connection, make reviewed single-file source updates with explicit write authorization, and view selected Vercel or Supabase project status. Live API diagnostics work only for the public compiled-ex-project demo.
+
+The home page presents a proposed time-based pricing model: Free at $0 for 3 hours per day and Pro at $20 per month for 24 hours per day. Time limits, billing, recurring checks, and deployment automation are not active. The MCP cannot directly deploy or schedule work. Do not describe these planned features as available.
+
+## Public pages
+
+- [Home](https://autops-app.vercel.app/): Product problem, goal, current connection flow, and proposed pricing.
+- [Project README](https://github.com/ongleam/autops/blob/main/README.md): Setup, integrations, OAuth scopes, and MCP limitations.
+
+## Policies
+
+- [Privacy policy](https://autops-app.vercel.app/privacy): Data use and connection details.
+- [Terms](https://autops-app.vercel.app/terms): Service terms and current limitations.

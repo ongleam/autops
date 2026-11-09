@@ -3,7 +3,7 @@ import Logo from "@/components/Logo";
 import { getConsent, CLOUD_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE } from "@/lib/mcp/oauth";
 
 export const instant = false;
-export const metadata = { title: "Connect ChatGPT account — autops", referrer: "same-origin" };
+export const metadata = { robots: { index: false, follow: false }, alternates: { canonical: "/connect/chatgpt" }, title: "Connect ChatGPT account — autops", referrer: "same-origin" };
 export default async function ChatGPTConsent({ searchParams }: { searchParams: Promise<{ flow?: string }> }) {
   const { flow: value } = await searchParams;
   const flow = getConsent(value, await cookies());
