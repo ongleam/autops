@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { EMAIL_SESSION_COOKIE, getAuthConfig, getEmailUser, safeReturnPath } from "@/lib/auth/session";
 
+export const instant = false;
 export const metadata = { title: "이메일 로그인 — autops", referrer: "no-referrer" };
 const messages: Record<string, string> = {
   setup: "이메일 로그인을 준비하고 있어요. 잠시 후 다시 시도해주세요.",
