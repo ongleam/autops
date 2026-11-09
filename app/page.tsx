@@ -27,7 +27,7 @@ export default function Home() {
           </li>
           <li className="pl-2">
             <h3 className="font-semibold">Connect autops in ChatGPT</h3>
-            <p className="mt-1 leading-7 text-[#71717a]">Open the <a href="https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184" className="underline underline-offset-4">autops plugin</a> and authorize the same GitHub account and repository.</p>
+            <p className="mt-1 leading-7 text-[#71717a]">Add the MCP server below as autops with OAuth in ChatGPT, if your workspace allows custom connections. Authorize the same GitHub account and repository.</p>
           </li>
           <li className="pl-2">
             <h3 className="font-semibold">Ask about your service</h3>
@@ -38,7 +38,7 @@ export default function Home() {
         <details className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
           <summary className="cursor-pointer font-medium">ChatGPT connection guide</summary>
           <div className="mt-4 space-y-3 leading-7 text-[#71717a]">
-            <p>If connection details are requested, use <strong className="text-[#27272a]">autops</strong> as the name and select <strong className="text-[#27272a]">OAuth</strong>. Leave the client ID and secret empty.</p>
+            <p>If your ChatGPT workspace allows custom MCP connections, create one. Use <strong className="text-[#27272a]">autops</strong> as the name and select <strong className="text-[#27272a]">OAuth</strong>. Leave the client ID and secret empty.</p>
             <p className="break-all rounded-md bg-[#f4f4f5] px-3 py-2 font-mono text-xs text-[#27272a]">https://autops-app.vercel.app/api/mcp</p>
             <p>Approve repository reads and cloud reads for connected services. Then ask autops to confirm your account and selected repository. If already connected, refresh the existing plugin.</p>
           </div>

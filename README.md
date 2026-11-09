@@ -4,7 +4,7 @@
 
 autops helps solo builders understand their code and service status with AI. Connect your GitHub repository, optionally connect Vercel and Supabase, and use autops in ChatGPT to inspect your project and decide what to improve next.
 
-**[Get started on autops](https://autops-app.vercel.app/)** · [Connect your accounts](https://autops-app.vercel.app/onboarding) · [Open autops in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184)
+**[Get started on autops](https://autops-app.vercel.app/)** · [Connect your accounts](https://autops-app.vercel.app/onboarding) · [ChatGPT connection steps](#3-connect-autops-in-chatgpt)
 
 ## Why we built it
 
@@ -59,7 +59,7 @@ These connections provide read-only inspection. They do not grant deployment, da
 
 Open **ChatGPT connection guide** on the [homepage](https://autops-app.vercel.app/) for the connection instructions and server address.
 
-1. Open the existing [autops plugin in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184). Keep using this connection rather than creating duplicates.
+1. In ChatGPT, add a custom MCP connection if your plan or workspace allows it. If you already have an autops connection, refresh that connection instead. The developer-owned plugin is private and cannot be installed by other accounts.
 2. If asked for connection details, use the name **autops**, select **OAuth**, and enter:
 
    ```text
@@ -115,7 +115,7 @@ If you have connected a different repository, autops reports that these diagnost
 | Your repository is missing | Check that you signed in with the right GitHub account and allowed that repository in the GitHub App installation. Refresh the repository list. Organization access may require administrator approval. |
 | A cloud project is missing | Check the provider account, team or organization, and the projects allowed during authorization. Refresh the project list. |
 | Project status works but logs are unavailable | Use **Review service permissions** on the account connection page to review the provider's log access, then try again. |
-| ChatGPT tools or permissions are outdated | Refresh the existing autops plugin's tools and reconnect the same account. Newly added permissions require fresh consent. |
+| ChatGPT tools or permissions are outdated | Refresh your autops connection's tools and reconnect the same account. Newly added permissions require fresh consent. |
 | Code changes are denied | Check both the GitHub App's **Contents: Read and write** permission and ChatGPT repository-write consent. |
 | Authentication has expired | Sign in again on autops and reconnect the existing ChatGPT connection as needed. |
 | ChatGPT does not offer a custom connection | Check your workspace's permissions for custom MCP connections. |
