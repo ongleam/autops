@@ -108,7 +108,7 @@ export async function handleCloudRequest(request: NextRequest, providerName: str
     }
     if (request.method === "GET" && action === "start") {
       const existing = await getCloudConnectionStatus(owner, provider);
-      if (existing.connected) return protect(NextResponse.redirect(target(request, provider, "connected"), 303));
+      if (existing.connected && request.nextUrl.searchParams.get("reauthorize") !== "1") return protect(NextResponse.redirect(target(request, provider, "connected"), 303));
       if (existing.status === "unavailable") throw new CloudError(503, "provider_unavailable");
       const flow: Flow = { state: randomBytes(32).toString("base64url"), verifier: randomBytes(32).toString("base64url"), origin: request.nextUrl.origin, owner };
       const url = new URL(provider === "vercel" ? `https://vercel.com/integrations/${config.slug}/new` : "https://api.supabase.com/v1/oauth/authorize");

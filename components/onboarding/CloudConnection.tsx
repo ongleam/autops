@@ -134,6 +134,7 @@ export default function CloudConnection({ provider, enabled }: Props) {
       ) : (
         <>
           <div className="border-t border-solid border-t-[var(--line)] py-4.5 px-0 flex justify-between items-center gap-3 text-[12px] text-[#71717a] [&_strong]:text-[#27272a] [&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] max-[600px]:items-start"><span>{name} access authorized</span><button type="button" onClick={disconnect} disabled={busy}>Disconnect</button></div>
+          <a className="inline-block text-xs underline underline-offset-4" href={`${base}/start?reauthorize=1`}>Review service permissions</a>
           <form onSubmit={save}>
             <div className="[&_button]:bg-transparent [&_button]:border-0 [&_button]:text-[12px] [&_button]:underline [&_button]:underline-offset-[4px] flex justify-between items-center gap-2.5 my-4 mx-0 font-semibold text-[13px] [&_button]:font-normal [&_button]:text-[#71717a]"><label htmlFor={`${provider}-project`}>Project to inspect</label><button type="button" onClick={refresh} disabled={busy}>Refresh list</button></div>
             <select className="w-full bg-[#fafafa] border border-solid border-[#e4e4e7] rounded-[6px] p-[13px] [font:inherit] focus-visible:outline-[2px] focus-visible:outline-solid focus-visible:outline-[#52525b] focus-visible:outline-offset-[2px]" id={`${provider}-project`} value={selected} onChange={(event) => setSelected(event.target.value)} disabled={busy} required>

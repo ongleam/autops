@@ -97,7 +97,7 @@ Vercel의 [Integration Console](https://vercel.com/docs/integrations/create-inte
 
 Supabase 조직 설정의 [Platform OAuth Apps](https://supabase.com/docs/guides/integrations/build-a-supabase-oauth-integration)에서 앱을 등록·게시합니다. 프로젝트의 Supabase Auth 로그인 앱과 다릅니다.
 
-- **Projects: Read**만 허용합니다. SQL, Secrets, 쓰기 권한은 요청하지 않습니다.
+- **Projects: Read**를 허용하고, 진단 로그 조회에는 **Analytics: Read-only**를 추가합니다. DB SQL, Secrets, 쓰기 권한은 요청하지 않습니다. 기존 연결에는 온보딩의 **Review service permissions**에서 재승인이 필요합니다.
 - Redirect URI: 서비스의 `/api/cloud/supabase/callback` 주소. 개발용 앱에는 `http://localhost:3000/api/cloud/supabase/callback`을 등록합니다.
 - 승인된 `SUPABASE_OAUTH_CLIENT_ID`, `SUPABASE_OAUTH_CLIENT_SECRET`를 환경 설정 절차로 등록합니다.
 - PKCE S256과 사용자·브라우저 세션에 묶인 state를 검증합니다.
