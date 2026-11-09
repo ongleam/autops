@@ -26,7 +26,7 @@ const website = {
 
 export default function Home() {
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-6 sm:py-8">
+    <main className="mx-auto w-full max-w-2xl px-4 py-3">
       {/* JSON-LD is static site data; escaping '<' keeps the script safe. */}
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(website).replace(/</g, "\\u003c") }} />
@@ -34,19 +34,19 @@ export default function Home() {
         <Logo className="text-xl" />
         <Link href="/login" className="inline-flex min-h-11 items-center gap-2 text-sm text-[#71717a] hover:text-[#2563eb]"><GitHubIcon className="h-4 w-4" />Sign in</Link>
       </header>
-      <section className="py-16 sm:py-20" aria-labelledby="landing-title">
+      <section className="py-6 sm:py-8" aria-labelledby="landing-title">
         <h1 id="landing-title" className="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Build alone.<br />Operate with AI.</h1>
-        <p className="mt-5 max-w-lg text-sm leading-7 text-[#71717a]">Connect your code and services to ChatGPT. Understand what is happening and decide what to improve next.</p>
-        <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]"><GitHubIcon className="mr-3 h-5 w-5" />Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
+        <p className="mt-3 max-w-lg text-sm leading-7 text-[#71717a]">Connect your code and services to ChatGPT. Understand what is happening and decide what to improve next.</p>
+        <Link href="/login" className="mt-4 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]"><GitHubIcon className="mr-3 h-5 w-5" />Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
       </section>
-      <section className="border-t border-[var(--line)] py-10" aria-labelledby="why-title">
+      <section className="border-t border-[var(--line)] py-5" aria-labelledby="why-title">
         <h2 id="why-title" className="text-xl font-semibold tracking-tight">Why we built autops</h2>
-        <p className="mt-4 text-sm leading-7 text-[#71717a]">AI makes it easier to launch a service. Keeping it running still means understanding errors, checking changes, and managing deployments.</p>
-        <p className="mt-3 text-sm leading-7 text-[#71717a]">We built autops to help solo builders do that work with AI, starting with their code, service status, and logs in one conversation.</p>
+        <p className="mt-2 text-sm leading-7 text-[#71717a]">AI makes it easier to launch a service. Keeping it running still means understanding errors, checking changes, and managing deployments.</p>
+        <p className="mt-2 text-sm leading-7 text-[#71717a]">We built autops to help solo builders do that work with AI, starting with their code, service status, and logs in one conversation.</p>
       </section>
-      <section className="border-t border-[var(--line)] py-10" aria-labelledby="how-title">
+      <section className="border-t border-[var(--line)] py-5" aria-labelledby="how-title">
         <h2 id="how-title" className="text-xl font-semibold tracking-tight">How to use it</h2>
-        <ol className="mt-6 list-decimal space-y-5 pl-5 text-sm marker:text-[#71717a]">
+        <ol className="mt-3 list-decimal space-y-3 pl-5 text-sm marker:text-[#71717a]">
           <li className="pl-2">
             <h3 className="font-semibold">Connect your project</h3>
             <p className="mt-1 leading-7 text-[#71717a]">Sign in with GitHub, install the autops GitHub App for the repositories you choose, then select a repository and click Connect this repository. Vercel and Supabase are optional.</p>
@@ -61,10 +61,10 @@ export default function Home() {
             <p className="mt-1 leading-7 text-[#71717a]">Start a new chat, type @ and select autops, then send the message below. Check that the answer shows your GitHub account and selected repository.</p>
           </li>
         </ol>
-        <blockquote className="mt-6 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Show my connected GitHub account and selected repository. Explain what you can inspect with my current connections.</blockquote>
-        <details open className="mt-6 rounded-lg border border-[var(--line)] p-4 text-sm">
+        <blockquote className="mt-3 border-l-2 border-[var(--line)] pl-4 text-sm leading-7 text-[#52525b]">Show my connected GitHub account and selected repository. Explain what you can inspect with my current connections.</blockquote>
+        <details open className="mt-3 rounded-lg border border-[var(--line)] p-4 text-sm">
           <summary className="cursor-pointer font-medium"><span className="inline-flex items-center gap-2 align-middle"><ServiceIcon service="chatgpt" />ChatGPT connection guide</span></summary>
-          <div className="mt-4 space-y-3 leading-7 text-[#71717a]">
+          <div className="mt-3 space-y-2 leading-7 text-[#71717a]">
             <p>Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noreferrer" className="underline underline-offset-4">ChatGPT Plugins</a>, select <strong className="text-[#27272a]">+</strong> (Add), then <strong className="text-[#27272a]">Add custom MCP server</strong>. Already have autops? Refresh that connection instead.</p>
             <p>Name it <strong className="text-[#27272a]">autops</strong>, choose <strong className="text-[#27272a]">Server URL</strong>, and paste this address:</p>
             <McpUrlCopy />
@@ -75,12 +75,12 @@ export default function Home() {
           </div>
         </details>
       </section>
-      <section className="border-t border-[var(--line)] pt-8" aria-labelledby="today-title">
+      <section className="border-t border-[var(--line)] pt-4" aria-labelledby="today-title">
         <h2 id="today-title" className="text-sm font-semibold">Available today</h2>
-        <p className="mt-3 text-sm leading-7 text-[#71717a]">Read source files, inspect connected services, and request source edits with write permission. API diagnostics support the public demo only. Automatic deployment and scheduling are not available yet.</p>
+        <p className="mt-2 text-sm leading-7 text-[#71717a]">Read source files, inspect connected services, and request source edits with write permission. API diagnostics support the public demo only. Automatic deployment and scheduling are not available yet.</p>
         <a href="https://github.com/ongleam/autops#readme" className="mt-3 inline-flex min-h-11 items-center text-sm underline underline-offset-4">Read the full guide <span className="ml-2" aria-hidden="true">→</span></a>
       </section>
-      <footer className="mt-10 flex gap-5 text-xs text-[#71717a]">
+      <footer className="mt-4 flex gap-5 text-xs text-[#71717a]">
         <Link href="/terms" className="py-2">Terms</Link>
         <Link href="/privacy" className="py-2">Privacy</Link>
       </footer>
