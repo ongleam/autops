@@ -33,7 +33,7 @@ bun run start
 
 GitHub App을 등록하고 다음과 같이 설정합니다.
 
-- 사용자 설치를 허용할 계정 범위를 선택하고 Repository permissions의 **Contents: Read-only**를 설정합니다. Metadata 읽기는 기본 권한입니다. 코드 쓰기·배포 권한은 요청하지 않습니다.
+- Repository permissions의 **Contents: Read and write**를 설정합니다. Metadata 읽기는 기본 권한이며 Workflows는 요청하지 않습니다. 기존 설치는 새 권한을 승인해야 합니다. 실제 수정에는 별도의 MCP `repository.write` 동의도 필요합니다.
 - Callback URL: 서비스의 `/api/github/callback` 주소. 로컬 개발은 `http://localhost:3000/api/github/callback`을 추가 등록합니다.
 - Setup URL: 서비스의 `/onboarding` 주소. 설치 변경 후 돌아오도록 Redirect on update를 켭니다.
 - **Request user authorization (OAuth) during installation은 끕니다.** 사용자 인증은 사이트의 PKCE 흐름으로 먼저 수행하며 설치 후 Setup URL로 돌아옵니다.
@@ -49,9 +49,8 @@ GitHub 서버 전용 설정은 `.env.example`의 `GITHUB_`로 시작하는 승�
 `POST /api/github/selection`은 GitHub에서 다시 확인한 저장소 ID·설치 ID만 허용합니다.
 연결 해제는 브라우저 세션만 지웁니다. App 설치·계정 권한을 철회하려면 GitHub 설정에서 제거합니다.
 
-이 연결은 진단·코드 변경·배포를 실행하지 않습니다. 브라우저 세션은 ChatGPT의 MCP 인증으로 전달되지 않으며,
-비공개 저장소를 MCP에서 사용하려면 사용자와 연결을 식별하는 별도 인증 계약이 필요합니다.
-공개 MCP에 사용자별 저장소·토큰을 반환하면 안 됩니다.
+온보딩 연결만으로 진단·코드 변경·배포를 실행하지 않습니다. 선택한 저장소는 ChatGPT OAuth 동의 시 연결에 묶입니다.
+MCP 소스 읽기·수정은 해당 사용자의 토큰으로 접근 권한을 매번 재확인합니다. 공개 MCP에 사용자별 저장소·토큰을 반환하면 안 됩니다.
 
 ```sh
 bun test tests
@@ -104,15 +103,15 @@ API 응답은 필요한 필드만 포함하며 토큰·원본 공급자 오류�
 ### ChatGPT OAuth 연결
 
 [autops 플러그인 SSOT](https://chatgpt.com/plugins/plugin_asdk_app_6af15485bd508191a2b71b9912640184)는 OAuth와 동적 클라이언트 등록(DCR)을 사용합니다. 서버 주소는 `https://autops-app.vercel.app/api/mcp`입니다. 중복 Auto Ops·autops diagnostics·패키지형 autops 연결은 사용하지 않습니다.
-`accounts.read` 동의 후 GitHub 계정과 App에 허용한 저장소 목록을 최대 1시간 조회합니다. PKCE S256·리디렉션 주소·state·issuer·audience를 검증하며, 코드 쓰기·배포 권한은 제공하지 않습니다.
-웹사이트 `/login`의 Supabase 이메일 로그인과 MCP의 GitHub OAuth는 별도 인증입니다. Vercel·Supabase 웹 세션도 MCP로 전달하지 않습니다.
-배포 후 ChatGPT에서 `get_connected_accounts` → `get_project_context` → `get_repository_file`(`lib/products.ts`) → `diagnose_project`를 실제 호출해 확인합니다. 공개 데모 진단 도구는 인증 없이도 사용할 수 있으므로 진단 성공만으로 OAuth 성공을 판단하지 않습니다.
+로그인은 GitHub만 사용합니다. 이전 이메일 로그인·가입·세션 API와 관련 Supabase Auth 설정은 제거했습니다. Supabase Platform OAuth 연결은 유지합니다.
+`accounts.read`는 계정·허용 저장소 목록, `repository.read`는 선택한 저장소의 소스 읽기, `repository.write`는 기존 소스 파일 수정에 사용합니다. 쓰기는 read와 write를 모두 승인해야 합니다. 기존 읽기 전용 토큰의 권한은 자동으로 확대되지 않습니다.
+온보딩에서 저장소를 선택한 뒤 ChatGPT에서 기존 autops 플러그인을 새로고침하고 요청된 OAuth 범위를 승인합니다. 연결은 최대 1시간 유지하며 PKCE S256·리디렉션 주소·state·issuer·audience와 실제 GitHub 계정을 검증합니다. Vercel·Supabase 웹 세션은 MCP로 전달하지 않습니다.
+배포 후 기존 플러그인에서 `get_connected_accounts` → `get_project_context` → `get_repository_file`(`lib/products.ts`) → `diagnose_project`를 실제 호출해 확인합니다. 서버 직접 호출만으로 플러그인 검증 성공을 보고하지 않습니다.
 
-공개 MCP는 `ongleam/compiled-ex-project` 하나만 대상으로 합니다. GitHub App 설치 토큰을 해당 저장소의 Contents·Metadata 읽기로 제한하고,
-README·package.json·lib/products.ts·app/api/products/route.ts만 실제 커밋에서 읽습니다. 저장소가 비공개로 바뀌면 공개 MCP의 소스 읽기를 거부합니다.
-다른 온보딩 사용자의 저장소·세션·토큰을 이 공개 MCP로 전달하지 않습니다.
+인증 없는 프로젝트 맥락은 공개 데모임을 명시합니다. 인증하면 선택한 저장소의 맥락을 반환합니다. 소스 읽기·수정은 OAuth 선택 저장소에만 허용되며 사용자·저장소·App 설치 접근 권한을 매 요청마다 검증합니다. 경로는 100 KB 이하 UTF-8 소스 파일로 제한하며 숨김 경로·워크플로·비밀 파일·경로 순회를 허용하지 않습니다.
 
-- `get_repository_file`: 허용 파일의 실제 소스·커밋·파일 SHA·출처 반환.
-- `diagnose_project`: 실제 배포된 상품 API의 두 기존 조회 방식을 limit 2로 각각 3회 교차 호출. HTTP 응답 시간 p50/p95·실패 수·서버가 보고한 DB HTTP 요청 수·상품 결과 동일성 반환.
+- `get_repository_file`: 선택한 저장소 기본 브랜치의 소스·커밋·파일 SHA·출처 반환.
+- `update_repository_file`: 읽은 `fileSha`를 `expectedSha`로 전달하고 수정 내용·커밋 메시지를 지정합니다. 파일이 변경됐으면 거부합니다. 기존 파일 하나를 기본 브랜치에 실제 커밋하며 파일 생성·삭제는 지원하지 않습니다. 커밋은 기존 CI/배포를 트리거할 수 있습니다. 도구 자체는 테스트·배포를 검증하지 않습니다.
+- `diagnose_project`: 선택한 저장소가 `ongleam/compiled-ex-project`일 때만 상품 API의 두 기존 조회 방식을 limit 2로 각각 3회 교차 호출합니다. 다른 저장소는 미지원임을 명시하며 다른 대상의 수치를 반환하지 않습니다. HTTP 응답 시간 p50/p95·실패 수·DB HTTP 요청 수·상품 결과 동일성을 반환합니다.
 - CPU·메모리·페이지 TTFB와 대상 서비스 배포 커밋은 미검증입니다. 콜드 스타트를 제외하지 않으며 표본이 작습니다.
-- 동일 배포 내 기존 조회 방식 비교이며 코드 변경 전후 개선, 영속 진단 저장, 자동 수정·배포·예약 기능은 아닙니다.
+- 진단은 동일 배포 내 기존 조회 방식 비교이며 코드 변경 전후 개선으로 해석하면 안 됩니다. 영속 진단 저장·직접 배포·예약 기능은 제공하지 않습니다.

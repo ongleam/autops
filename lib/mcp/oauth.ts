@@ -4,19 +4,29 @@ import { z } from "zod/v4";
 import { createSession, getSession, getCookieName, type GitHubSession } from "../github/session";
 import { createGitHubClient } from "../github/client";
 import { MCP_URL } from "../projects/context";
+import type { RepositoryConnection } from "../github/selected-repository";
 
 export const ISSUER = new URL(MCP_URL).origin;
 export const ACCOUNT_SCOPE = "accounts.read";
+export const REPOSITORY_READ_SCOPE = "repository.read";
+export const REPOSITORY_WRITE_SCOPE = "repository.write";
+const SCOPES = [ACCOUNT_SCOPE, REPOSITORY_READ_SCOPE, REPOSITORY_WRITE_SCOPE];
+const scopeSchema = z.string().refine((value) => {
+  const scopes = value.split(" ");
+  return scopes.includes(ACCOUNT_SCOPE) && scopes.every((scope) => SCOPES.includes(scope)) &&
+    (!scopes.includes(REPOSITORY_WRITE_SCOPE) || scopes.includes(REPOSITORY_READ_SCOPE));
+});
 const FLOW_COOKIE = "__Host-autops-mcp-flow";
 const clientSchema = z.object({ redirectUris: z.array(z.string()).min(1).max(5) });
 const flowSchema = z.object({
   clientId: z.string(), redirectUri: z.string(), challenge: z.string(), state: z.string(), nonce: z.string(),
   ownerId: z.number().int().positive().nullable(), repositoryId: z.number().int().positive().nullable(),
+  scope: scopeSchema.default(ACCOUNT_SCOPE),
 });
 type Flow = z.infer<typeof flowSchema>;
 const grantSchema = flowSchema.extend({ code: z.string().min(1).max(512) });
 const accessSchema = z.object({
-  issuer: z.literal(ISSUER), audience: z.literal(MCP_URL), scope: z.literal(ACCOUNT_SCOPE),
+  issuer: z.literal(ISSUER), audience: z.literal(MCP_URL), scope: scopeSchema,
   token: z.string().min(1).max(2048), userId: z.number().int().positive(), repositoryId: z.number().int().positive().nullable(),
 });
 
@@ -59,10 +69,10 @@ export function authorizationMetadata() {
   return { issuer: ISSUER, authorization_endpoint: `${ISSUER}/oauth/authorize`, token_endpoint: `${ISSUER}/oauth/token`,
     authorization_response_iss_parameter_supported: true,
     registration_endpoint: `${ISSUER}/oauth/register`, response_types_supported: ["code"], grant_types_supported: ["authorization_code"],
-    token_endpoint_auth_methods_supported: ["none"], code_challenge_methods_supported: ["S256"], scopes_supported: [ACCOUNT_SCOPE] };
+    token_endpoint_auth_methods_supported: ["none"], code_challenge_methods_supported: ["S256"], scopes_supported: SCOPES };
 }
 export function resourceMetadata() {
-  return { resource: MCP_URL, authorization_servers: [ISSUER], scopes_supported: [ACCOUNT_SCOPE], bearer_methods_supported: ["header"] };
+  return { resource: MCP_URL, authorization_servers: [ISSUER], scopes_supported: SCOPES, bearer_methods_supported: ["header"] };
 }
 
 export function getConsent(flowValue: string | undefined, cookies: { get(name: string): { value: string } | undefined }) {
@@ -91,15 +101,19 @@ export async function handleOAuth(request: NextRequest, action: string) {
       const redirectUri = q.get("redirect_uri") || "";
       const challenge = q.get("code_challenge") || "";
       const state = q.get("state") || "";
+      const scope = scopeSchema.safeParse(q.get("scope") ?? ACCOUNT_SCOPE);
       if (!client || !client.redirectUris.includes(redirectUri) || !validRedirect(redirectUri) || q.get("response_type") !== "code" ||
         q.get("code_challenge_method") !== "S256" || !/^[a-zA-Z0-9_-]{43}$/.test(challenge) || !state || state.length > 512 ||
-        (q.has("scope") && q.get("scope") !== ACCOUNT_SCOPE) || (q.has("resource") && q.get("resource") !== MCP_URL)) {
+        !scope.success || (q.has("resource") && q.get("resource") !== MCP_URL)) {
         return json({ error: "invalid_request" }, 400);
       }
       const github = getSession<GitHubSession>(request.cookies.get(getCookieName("session"))?.value, cfg.secret);
       const valid = github && github.expiresAt > Math.floor(Date.now() / 1000) ? github : null;
+      if (scope.data.includes(REPOSITORY_READ_SCOPE) && !valid?.repository) {
+        return json({ error: "invalid_request", error_description: "Sign in with GitHub and select a repository on autops before connecting repository tools." }, 400);
+      }
       const flow: Flow = { clientId, redirectUri, challenge, state, nonce: randomBytes(32).toString("base64url"),
-        ownerId: valid?.user.id ?? null, repositoryId: valid?.repository?.id ?? null };
+        ownerId: valid?.user.id ?? null, repositoryId: valid?.repository?.id ?? null, scope: scope.data };
       const target = new URL("/connect/chatgpt", ISSUER);
       target.searchParams.set("flow", encode(flow, "consent", 600));
       return setFlow(NextResponse.redirect(target, 303), flow.nonce, flow.nonce, 600);
@@ -144,8 +158,8 @@ export async function handleOAuth(request: NextRequest, action: string) {
       const user = await createGitHubClient(token.data.access_token).getUser();
       if (grant.ownerId && grant.ownerId !== user.id) return json({ error: "invalid_grant", error_description: "Connect the same GitHub account used on autops." }, 400);
       const lifetime = Math.min(3600, token.data.expires_in ?? 3600);
-      return json({ access_token: encode({ issuer: ISSUER, audience: MCP_URL, scope: ACCOUNT_SCOPE, token: token.data.access_token,
-        userId: user.id, repositoryId: grant.repositoryId }, "access", lifetime), token_type: "Bearer", expires_in: lifetime, scope: ACCOUNT_SCOPE });
+      return json({ access_token: encode({ issuer: ISSUER, audience: MCP_URL, scope: grant.scope, token: token.data.access_token,
+        userId: user.id, repositoryId: grant.repositoryId }, "access", lifetime), token_type: "Bearer", expires_in: lifetime, scope: grant.scope });
     }
     return json({ error: "not_found" }, 404);
   } catch {
@@ -167,9 +181,32 @@ export function handleMcpGitHubCallback(request: NextRequest) {
   return setFlow(NextResponse.redirect(target, 303), flow.nonce, "", 0);
 }
 
-export async function getConnectedAccounts(request: Request | undefined) {
+function getAccess(request: Request | undefined) {
   const value = request?.headers.get("authorization")?.match(/^Bearer ([a-zA-Z0-9_-]+)$/i)?.[1];
-  const access = decode(value, "access", accessSchema);
+  if (!value) return null;
+  return decode(value, "access", accessSchema);
+}
+
+export class McpAuthorizationError extends Error {
+  constructor(public scope: string) { super("Connect or reauthorize autops with the requested repository permissions."); }
+}
+
+export async function getRepositoryConnection(request: Request | undefined, requiredScope = REPOSITORY_READ_SCOPE): Promise<RepositoryConnection> {
+  const access = getAccess(request);
+  const required = [ACCOUNT_SCOPE, REPOSITORY_READ_SCOPE, ...(requiredScope === REPOSITORY_WRITE_SCOPE ? [REPOSITORY_WRITE_SCOPE] : [])].join(" ");
+  if (!access || !access.scope.split(" ").includes(requiredScope)) throw new McpAuthorizationError(required);
+  const client = createGitHubClient(access.token);
+  const user = await client.getUser();
+  if (user.id !== access.userId) throw new McpAuthorizationError(required);
+  const appId = process.env.GITHUB_APP_ID;
+  if (!appId) throw new Error("setup_required");
+  const repository = (await client.getRepositories(appId)).find((repo) => repo.id === access.repositoryId);
+  if (!repository) throw new Error("Select an accessible repository on autops, then reconnect the ChatGPT plugin.");
+  return { token: access.token, repository };
+}
+
+export async function getConnectedAccounts(request: Request | undefined) {
+  const access = getAccess(request);
   if (!access) return null;
   const client = createGitHubClient(access.token);
   const user = await client.getUser();
@@ -178,6 +215,7 @@ export async function getConnectedAccounts(request: Request | undefined) {
   if (!appId) throw new Error("setup_required");
   const repositories = await client.getRepositories(appId);
   return { github: { connected: true, user, repository: repositories.find((repo) => repo.id === access.repositoryId) ?? null, repositories },
+    permissions: { repositoryRead: access.scope.split(" ").includes(REPOSITORY_READ_SCOPE), repositoryWrite: access.scope.split(" ").includes(REPOSITORY_WRITE_SCOPE) },
     checkedAt: new Date().toISOString(),
     cloudAccounts: { status: "not_shared", message: "Vercel and Supabase browser connections are separate and are not shared with this MCP authorization." } };
 }

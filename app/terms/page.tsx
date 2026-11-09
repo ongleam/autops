@@ -13,6 +13,7 @@ export default function TermsPage() {
       <p className="mt-3">Autops is a demo that connects GitHub repositories and Vercel or Supabase projects to read authorized project information and deployment status. Connecting alone does not start code changes, deployments, SQL execution, or database row access.</p>
       <h2 className="mt-8 text-xl font-semibold">2. Connections and permissions</h2>
       <p className="mt-3">Connect only accounts and projects you are authorized to access. Review permissions on each provider authorization screen. Autops requests information within those permissions. Provider terms and access policies also apply.</p>
+      <p className="mt-3">With separate repository.write consent, requested source changes can be committed to the selected repository’s default branch and may trigger existing CI/deployments. Review changes first. A commit does not verify tests or deployment.</p>
       <h2 className="mt-8 text-xl font-semibold">3. Demo limitations</h2>
       <p className="mt-3">This demo has no service-level agreement (SLA). Features and availability may change. Displayed status depends on the time of the query and provider response. Recheck the provider dashboard before making operational decisions. Instructions and query results do not mean diagnosis, changes, or deployment have been completed.</p>
       <h2 className="mt-8 text-xl font-semibold">4. Ending use</h2>

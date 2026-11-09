@@ -26,8 +26,10 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
         "get_maintenance_prompt",
         "get_project_context",
         "get_repository_file",
+        "update_repository_file",
       ]);
-      assert.ok(tools.every((tool) => tool.annotations?.readOnlyHint));
+      assert.ok(tools.filter((tool) => tool.name !== "update_repository_file").every((tool) => tool.annotations?.readOnlyHint));
+      assert.equal(tools.find((tool) => tool.name === "update_repository_file")?.annotations?.readOnlyHint, false);
       const result = await client.callTool({ name: "get_project_context", arguments: {} });
       assert.equal(result.isError, undefined);
       const context = result.structuredContent as Record<string, unknown>;
@@ -42,7 +44,7 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
         scheduling: false,
       });
       const instructions = await client.callTool({ name: "get_connection_instructions", arguments: {} });
-      assert.equal((instructions.structuredContent as Record<string, unknown>).authentication, "OAuth for get_connected_accounts; public tools require no authentication");
+      assert.equal((instructions.structuredContent as Record<string, unknown>).authentication, "GitHub OAuth; selected repository reads and writes require explicit scopes");
       const accounts = await client.callTool({ name: "get_connected_accounts", arguments: {} });
       assert.equal(accounts.isError, true);
       assert.ok(accounts._meta?.["mcp/www_authenticate"]);
