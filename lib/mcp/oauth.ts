@@ -24,6 +24,7 @@ const flowSchema = z.object({
   clientId: z.string(), redirectUri: z.string(), challenge: z.string(), state: z.string(), nonce: z.string(),
   ownerId: z.number().int().positive().nullable(), repositoryId: z.number().int().positive().nullable(),
   scope: scopeSchema.default(ACCOUNT_SCOPE),
+  refreshAllowed: z.boolean().default(false),
 });
 type Flow = z.infer<typeof flowSchema>;
 const grantSchema = flowSchema.extend({ code: z.string().min(1).max(512) });
@@ -31,6 +32,14 @@ const accessSchema = z.object({
   issuer: z.literal(ISSUER), audience: z.literal(MCP_URL), scope: scopeSchema,
   token: z.string().min(1).max(2048), userId: z.number().int().positive(), repositoryId: z.number().int().positive().nullable(),
 });
+const refreshSchema = accessSchema.omit({ token: true }).extend({
+  clientIdHash: z.string().regex(/^[a-f0-9]{64}$/), refreshToken: z.string().min(1).max(2048),
+});
+const githubTokenSchema = z.object({
+  access_token: z.string().min(1).max(2048), expires_in: z.number().int().positive().optional(),
+  refresh_token: z.string().min(1).max(2048).optional(), refresh_token_expires_in: z.number().int().positive().optional(),
+});
+const MAX_REFRESH_AGE = 15897600;
 
 function config() {
   const secret = process.env.GITHUB_SESSION_SECRET;
@@ -46,6 +55,20 @@ function decode<T extends z.ZodType>(value: string | undefined, purpose: string,
   return parsed.success ? parsed.data : null;
 }
 function encode(data: unknown, purpose: string, age: number) { return createSession(data, key(purpose), age); }
+function getClientIdHash(clientId: string) { return createHash("sha256").update(clientId).digest("hex"); }
+
+function createTokens(token: z.infer<typeof githubTokenSchema>, clientId: string, scope: string, userId: number, repositoryId: number | null, refreshAllowed = true) {
+  const identity = { issuer: ISSUER, audience: MCP_URL, scope, userId, repositoryId };
+  const lifetime = Math.min(3600, token.expires_in ?? 3600);
+  const refreshAge = Math.min(token.refresh_token_expires_in ?? 0, MAX_REFRESH_AGE);
+  return json({ access_token: encode({ ...identity, token: token.access_token }, "access", lifetime),
+    token_type: "Bearer", expires_in: lifetime, scope,
+    ...(refreshAllowed && token.expires_in && token.refresh_token && refreshAge > 0 ? {
+      refresh_token: encode({ ...identity, clientIdHash: getClientIdHash(clientId), refreshToken: token.refresh_token }, "refresh", refreshAge),
+      refresh_token_expires_in: refreshAge,
+    } : {}),
+  });
+}
 
 function validRedirect(value: string) {
   try {
@@ -70,7 +93,7 @@ function setFlow(response: NextResponse, nonce: string, value: string, maxAge: n
 export function authorizationMetadata() {
   return { issuer: ISSUER, authorization_endpoint: `${ISSUER}/oauth/authorize`, token_endpoint: `${ISSUER}/oauth/token`,
     authorization_response_iss_parameter_supported: true,
-    registration_endpoint: `${ISSUER}/oauth/register`, response_types_supported: ["code"], grant_types_supported: ["authorization_code"],
+    registration_endpoint: `${ISSUER}/oauth/register`, response_types_supported: ["code"], grant_types_supported: ["authorization_code", "refresh_token"],
     token_endpoint_auth_methods_supported: ["none"], code_challenge_methods_supported: ["S256"], scopes_supported: SCOPES };
 }
 export function resourceMetadata() {
@@ -94,7 +117,7 @@ export async function handleOAuth(request: NextRequest, action: string) {
         .safeParse(JSON.parse(body));
       if (!input.success || !input.data.redirect_uris.every(validRedirect)) return json({ error: "invalid_redirect_uri" }, 400);
       return json({ client_id: encode({ redirectUris: input.data.redirect_uris }, "client", 365 * 86400),
-        redirect_uris: input.data.redirect_uris, token_endpoint_auth_method: "none", grant_types: ["authorization_code"], response_types: ["code"] }, 201);
+        redirect_uris: input.data.redirect_uris, token_endpoint_auth_method: "none", grant_types: ["authorization_code", "refresh_token"], response_types: ["code"] }, 201);
     }
     if (action === "authorize" && request.method === "GET") {
       const q = request.nextUrl.searchParams;
@@ -115,7 +138,7 @@ export async function handleOAuth(request: NextRequest, action: string) {
         return json({ error: "invalid_request", error_description: "Sign in with GitHub and select a repository on autops before connecting repository tools." }, 400);
       }
       const flow: Flow = { clientId, redirectUri, challenge, state, nonce: randomBytes(32).toString("base64url"),
-        ownerId: valid?.user.id ?? null, repositoryId: valid?.repository?.id ?? null, scope: scope.data };
+        ownerId: valid?.user.id ?? null, repositoryId: valid?.repository?.id ?? null, scope: scope.data, refreshAllowed: true };
       const target = new URL("/connect/chatgpt", ISSUER);
       target.searchParams.set("flow", encode(flow, "consent", 600));
       return setFlow(NextResponse.redirect(target, 303), flow.nonce, flow.nonce, 600);
@@ -143,6 +166,28 @@ export async function handleOAuth(request: NextRequest, action: string) {
       const text = await request.text();
       if (text.length > 16384) return json({ error: "invalid_request" }, 400);
       const input = new URLSearchParams(text);
+      if (input.get("grant_type") === "refresh_token") {
+        const refresh = decode(input.get("refresh_token") || undefined, "refresh", refreshSchema);
+        const clientId = input.get("client_id") || "";
+        if (!refresh || getClientIdHash(clientId) !== refresh.clientIdHash || !decode(clientId, "client", clientSchema) ||
+          (input.has("resource") && input.get("resource") !== MCP_URL)) return json({ error: "invalid_grant" }, 400);
+        const scope = scopeSchema.safeParse(input.get("scope") ?? refresh.scope);
+        if (!scope.success || scope.data.split(" ").some((value) => !refresh.scope.split(" ").includes(value))) {
+          return json({ error: "invalid_scope" }, 400);
+        }
+        // GitHub rotates and consumes the upstream refresh token across serverless instances.
+        const response = await fetch("https://github.com/login/oauth/access_token", {
+          method: "POST", headers: { Accept: "application/json" }, body: new URLSearchParams({ client_id: cfg.clientId,
+            client_secret: cfg.clientSecret, grant_type: "refresh_token", refresh_token: refresh.refreshToken }),
+          cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10_000),
+        });
+        const token = githubTokenSchema.safeParse(await response.json());
+        if (!response.ok || !token.success || !token.data.expires_in || !token.data.refresh_token ||
+          !token.data.refresh_token_expires_in || token.data.refresh_token === refresh.refreshToken) return json({ error: "invalid_grant" }, 400);
+        const user = await createGitHubClient(token.data.access_token).getUser();
+        if (user.id !== refresh.userId) return json({ error: "invalid_grant" }, 400);
+        return createTokens(token.data, clientId, scope.data, refresh.userId, refresh.repositoryId);
+      }
       const grant = decode(input.get("code") || undefined, "code", grantSchema);
       const verifier = input.get("code_verifier") || "";
       if (input.get("grant_type") !== "authorization_code" || !grant || input.get("client_id") !== grant.clientId ||
@@ -155,13 +200,11 @@ export async function handleOAuth(request: NextRequest, action: string) {
           client_secret: cfg.clientSecret, code: grant.code, redirect_uri: `${ISSUER}/api/github/callback`, code_verifier: verifier }),
         cache: "no-store", redirect: "error", signal: AbortSignal.timeout(10_000),
       });
-      const token = z.object({ access_token: z.string().min(1).max(2048), expires_in: z.number().int().positive().optional() }).safeParse(await response.json());
+      const token = githubTokenSchema.safeParse(await response.json());
       if (!response.ok || !token.success) return json({ error: "invalid_grant" }, 400);
       const user = await createGitHubClient(token.data.access_token).getUser();
       if (grant.ownerId && grant.ownerId !== user.id) return json({ error: "invalid_grant", error_description: "Connect the same GitHub account used on autops." }, 400);
-      const lifetime = Math.min(3600, token.data.expires_in ?? 3600);
-      return json({ access_token: encode({ issuer: ISSUER, audience: MCP_URL, scope: grant.scope, token: token.data.access_token,
-        userId: user.id, repositoryId: grant.repositoryId }, "access", lifetime), token_type: "Bearer", expires_in: lifetime, scope: grant.scope });
+      return createTokens(token.data, grant.clientId, grant.scope, user.id, grant.repositoryId, grant.refreshAllowed);
     }
     return json({ error: "not_found" }, 404);
   } catch {
