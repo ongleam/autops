@@ -15,5 +15,5 @@ export default function GitHubConnection() {
       .catch(() => { if (!controller.signal.aborted) setLabel("연결 확인 필요"); });
     return () => controller.abort();
   }, []);
-  return <div id="connections" className="connection-footer" style={{ gap: 12 }}><span style={{ minWidth: 0, overflowWrap: "anywhere" }}><span className="github-mini">⑂</span> GitHub <span className="connection-check">{label}</span></span><a className="button" href="/onboarding">계정 연결 <span>↗</span></a></div>;
+  return <div id="connections" className="connection-footer" style={{ gap: 12 }}><span style={{ minWidth: 0, overflowWrap: "anywhere" }}><span className="github-mini">⑂</span> GitHub <span className="connection-check">{label}</span></span><a className="button" href="/onboarding">계정 연결</a></div>;
 }

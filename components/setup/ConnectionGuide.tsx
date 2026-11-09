@@ -72,7 +72,8 @@ ${projectData}
         <header className={styles.heading}>
           <span className={styles.step}>02</span>
           <div>
-            <h2 id="mcp-title">ChatGPT에 MCP 연결하기</h2>
+            <p className={styles.eyebrow}>MCP CONNECTION</p>
+            <h2 id="mcp-title">MCP 연결</h2>
           </div>
           <span className={styles.badge}>{serverReady ? "MCP 서버 제공 중" : "서버 확인 전"}</span>
         </header>
@@ -90,7 +91,7 @@ ${projectData}
             spellCheck={false}
           />
           <button type="button" className={styles.copyButton} onClick={copyAddress} disabled={!mcpUrl}>
-            주소 복사 <span aria-hidden="true">↗</span>
+            주소 복사
           </button>
         </div>
         <p className={styles.copyStatus} role="status">
@@ -103,7 +104,7 @@ ${projectData}
         <McpConnectionSteps />
         <div className={styles.notice}>
           <span aria-hidden="true">ⓘ</span>
-          <p>{serverReady ? "계정 조회는 OAuth 인증 후 사용할 수 있어요. 데모 프로젝트 확인과 연결 안내는 공개 도구이며, 실제 진단·코드 변경 도구는 아직 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
+          <p>{serverReady ? "계정 조회는 OAuth 인증 후 사용할 수 있어요. 공개 데모의 소스 읽기와 API 진단은 인증 없이 사용할 수 있어요. CPU·메모리 계측과 코드 변경은 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
         </div>
       </section>
 
@@ -111,7 +112,8 @@ ${projectData}
         <header className={styles.heading}>
           <span className={styles.step}>03</span>
           <div>
-            <h2 id="schedule-title">ChatGPT에서 시작하기</h2>
+            <p className={styles.eyebrow}>MAINTENANCE</p>
+            <h2 id="schedule-title">점검 프롬프트</h2>
           </div>
         </header>
         <p className={styles.description}>
@@ -127,7 +129,7 @@ ${projectData}
             프롬프트 복사 <span aria-hidden="true">→</span>
           </button>
           <a href="https://chatgpt.com" target="_blank" rel="noreferrer" className={styles.chatLink}>
-            ChatGPT 열기 <span aria-hidden="true">↗</span>
+            ChatGPT 열기
           </a>
         </div>
         <p className={styles.copyStatus} role="status">
