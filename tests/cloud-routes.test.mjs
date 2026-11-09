@@ -47,6 +47,12 @@ beforeEach(() => {
     }
     if (String(init.headers?.Authorization).includes("bad-vercel-log-token")) return Response.json({}, {status:401});
     if (providerStatus !== 200) return Response.json({}, {status: providerStatus});
+    if (url.pathname === "/v1/observability/events") {
+      logReads++;
+      if (String(init.headers?.Authorization).includes("forbidden-vercel-log-token")) return Response.json({}, {status:403});
+      expect(JSON.parse(init.body).scope.projectIds).toEqual(["project_a"]);
+      return Response.json({events:[{message:"Bearer cloud-1",timestamp:new Date().toISOString()}],pagination:{hasMore:false}});
+    }
     if (url.pathname.endsWith("/runtime-logs")) {
       logReads++;
       if (String(init.headers?.Authorization).includes("forbidden-vercel-log-token")) return Response.json({}, {status:403});
