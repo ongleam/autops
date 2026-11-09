@@ -191,3 +191,25 @@ test("project-scoped log access reports a bounded live sample when history acces
   expect(result.entries).toHaveLength(1);
   expect(result.coverage.windowLimitations).toContain("not complete historical coverage");
 });
+
+test("Hobby retention retries once and reports the excluded interval without changing the requested end", async () => {
+  await saveConnection("vercel",session("1",{logsToken:"history-token-12345",refreshToken:"refresh-private"}));
+  const providerFetch=globalThis.fetch;
+  const windows=[];
+  globalThis.fetch=async (input,init={}) => {
+    if (new URL(String(input)).pathname!=="/v1/observability/events") return providerFetch(input,init);
+    windows.push(JSON.parse(init.body).timeRange);
+    return windows.length===1
+      ? Response.json({error:{message:"The hobby plan does not retain runtime logs for the requested time range."}},{status:400})
+      : Response.json({events:[{message:"refresh-private"}],pagination:{hasMore:false}});
+  };
+  const result=await getUserProjectLogs("1",cloudLogsInput.parse({provider:"vercel",minutes:60}));
+  expect(windows).toHaveLength(2);
+  expect(windows[1].end).toBe(windows[0].end);
+  expect(Date.parse(windows[1].start)).toBeGreaterThan(Date.parse(windows[0].start));
+  expect(result.requestedWindow).toEqual(windows[0]);
+  expect(result.window).toEqual(windows[1]);
+  expect(result.coverage.retentionClipped).toBe(true);
+  expect(result.coverage.excludedIntervals).toEqual([{start:windows[0].start,end:windows[1].start}]);
+  expect(JSON.stringify(result.entries)).not.toContain("refresh-private");
+});
