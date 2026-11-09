@@ -45,6 +45,12 @@ export default function Home() {
         <p className="mt-5 text-sm leading-7 text-[#71717a]">Sign in with GitHub and check your project in ChatGPT.</p>
         <Link href="/login" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-[#18181b] px-6 text-sm font-semibold text-white hover:bg-[#3f3f46]">Get started with GitHub <span className="ml-3" aria-hidden="true">→</span></Link>
       </section>
+      <section className="mb-14 border-t border-[var(--line)] pt-10" aria-labelledby="problem-title">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#2563eb]">The problem</p>
+        <h2 id="problem-title" className="mt-3 text-2xl font-semibold tracking-tight">Building alone is possible. Running alone is hard.</h2>
+        <p className="mt-3 text-sm leading-7 text-[#71717a]">Non-developers and vibe coders can launch a service, but verification, deployment, and operations still demand DevOps time.</p>
+        <p className="mt-3 text-sm leading-7">Our goal: an AI MCP that takes on that DevOps work for a solo builder, from launch to 100,000 monthly active users.</p>
+      </section>
       <div className="grid gap-3">
         <details className="rounded-lg border border-[var(--line)] bg-white p-4">
           <summary className="cursor-pointer text-sm font-medium">ChatGPT connection guide</summary>
