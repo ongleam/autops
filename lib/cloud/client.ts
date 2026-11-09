@@ -7,7 +7,7 @@ export type CloudProject = { id: string; name: string; region?: string; status?:
 export type CloudOverview = { project: CloudProject; deployment?: { id: string; state: string; createdAt: number } | null; checkedAt: string };
 
 export class CloudError extends Error {
-  constructor(public status: number, public code: string) { super(code); }
+  constructor(public status: number, public code: string, public detail?: string) { super(code); }
 }
 
 const text = z.string().min(1).max(256);

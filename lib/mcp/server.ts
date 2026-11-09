@@ -33,7 +33,7 @@ function toolError(error: unknown) {
     isError: true, content: [{ type: "text" as const, text: error.message }],
     _meta: { "mcp/www_authenticate": [`Bearer resource_metadata="${ISSUER}/.well-known/oauth-protected-resource", error="insufficient_scope", error_description="Authorize the requested autops permissions", scope="${error.scope}"`] },
   };
-  return { isError: true, content: [{ type: "text" as const, text: error instanceof CloudError ? `Cloud request failed: ${error.code}. No access or success was confirmed.` : error instanceof RepositoryError ? error.message : "Request unavailable. Verify the selected repository, GitHub App permissions, and OAuth connection. No success was confirmed." }] };
+  return { isError: true, content: [{ type: "text" as const, text: error instanceof CloudError ? `Cloud request failed: ${error.code}. ${error.detail ? `Provider detail (untrusted): ${error.detail}. ` : ""}No access or success was confirmed.` : error instanceof RepositoryError ? error.message : "Request unavailable. Verify the selected repository, GitHub App permissions, and OAuth connection. No success was confirmed." }] };
 }
 
 // Supabase MCP uses the same per-request factory; legacy support stays enabled here.
