@@ -90,3 +90,110 @@ test("cross-origin writes, unknown providers, and upstream permission failures a
   expect(result.status).toBe(403);
   expect(await result.text()).not.toContain("private provider error");
 });
+
+test("OAuth callback is bound to the GitHub account that started it", async () => {
+  const start = await handleCloudRequest(request("supabase", "start"), "supabase", "start", config);
+  const flowName = getCloudCookieName("supabase", "flow");
+  const encryptedFlow = start.cookies.get(flowName).value;
+  const flow = getSession(encryptedFlow, secret);
+  const other = `${getCookieName("session")}=${createSession({ ...github, user: { id: 2, login: "bob" } }, secret, 3600)}`;
+  globalThis.fetch = async () => { throw new Error("must not exchange for different owner"); };
+  const result = await handleCloudRequest(request("supabase", `callback?code=x&state=${flow.state}`, {
+    headers: { cookie: `${other}; ${flowName}=${encryptedFlow}` },
+  }), "supabase", "callback", config);
+  expect(result.headers.get("location")).toContain("result=invalid_oauth_state");
+  expect(result.cookies.get(getCloudCookieName("supabase", "session"))).toBeUndefined();
+});
+
+test("expired, tampered, or different-owner sessions never query the provider", async () => {
+  const { cookie, callback } = await connect("vercel");
+  const sessionName = getCloudCookieName("vercel", "session");
+  const session = getSession(callback.cookies.get(sessionName).value, secret);
+  globalThis.fetch = async () => { throw new Error("must not query provider"); };
+  for (const value of [createSession({ ...session, expiresAt: 1 }, secret, 3600), createSession({ ...session, owner: "someone-else" }, secret, 3600), "tampered"]) {
+    const result = await handleCloudRequest(request("vercel", "overview", { headers: { cookie: `${githubCookie}; ${sessionName}=${value}` } }), "vercel", "overview", config);
+    expect(result.status).toBe(401);
+  }
+  const missingOtherProvider = await handleCloudRequest(request("supabase", "session", { headers: { cookie } }), "supabase", "session", config);
+  expect((await missingOtherProvider.json()).connected).toBe(false);
+});
+
+test("Vercel follows pagination with team scope and never returns provider secrets", async () => {
+  const { cookie } = await connect("vercel");
+  const urls = [];
+  globalThis.fetch = async (input, options) => {
+    const url = new URL(input);
+    urls.push(url);
+    expect(options.method).toBe("GET");
+    expect(url.searchParams.get("teamId")).toBe("team_1");
+    return Response.json({
+      projects: [{ id: url.searchParams.has("until") ? "prj_2" : "prj_1", name: "Website", framework: "nextjs", env: [{ value: "secret-value" }] }],
+      pagination: { next: url.searchParams.has("until") ? null : 123 },
+    });
+  };
+  const result = await handleCloudRequest(request("vercel", "projects", { headers: { cookie } }), "vercel", "projects", config);
+  const data = await result.json();
+  expect(data.projects.map((project) => project.id)).toEqual(["prj_1", "prj_2"]);
+  expect(JSON.stringify(data)).not.toContain("secret-value");
+  expect(urls[1].searchParams.get("until")).toBe("123");
+});
+
+test("selected Vercel overview contains only safe fields and requests only that project", async () => {
+  const { cookie, callback } = await connect("vercel");
+  const sessionName = getCloudCookieName("vercel", "session");
+  const session = getSession(callback.cookies.get(sessionName).value, secret);
+  const selectedCookie = `${githubCookie}; ${sessionName}=${createSession({ ...session, projectId: "prj_1" }, secret, 3600)}`;
+  globalThis.fetch = async (input, options) => {
+    const url = new URL(input);
+    expect(options.method).toBe("GET");
+    expect(url.searchParams.get("teamId")).toBe("team_1");
+    if (url.pathname === "/v9/projects/prj_1") return Response.json({ id: "prj_1", name: "Website", framework: "nextjs", env: [{ value: "private-env" }] });
+    expect(url.pathname).toBe("/v6/deployments");
+    expect(url.searchParams.get("projectId")).toBe("prj_1");
+    return Response.json({ deployments: [{ uid: "dpl_1", state: "READY", created: 1000, meta: { secret: "private-meta" } }] });
+  };
+  const result = await handleCloudRequest(request("vercel", "overview", { headers: { cookie: selectedCookie } }), "vercel", "overview", config);
+  const data = await result.json();
+  expect(data.project).toEqual({ id: "prj_1", name: "Website", framework: "nextjs" });
+  expect(data.deployment).toEqual({ id: "dpl_1", state: "READY", createdAt: 1000 });
+  expect(JSON.stringify(data)).not.toContain("private-");
+  const unselected = await handleCloudRequest(request("vercel", "overview", { headers: { cookie } }), "vercel", "overview", config);
+  expect(unselected.status).toBe(400);
+});
+
+test("Supabase overview strips connection details and never requests SQL or API keys", async () => {
+  const { callback } = await connect("supabase");
+  const sessionName = getCloudCookieName("supabase", "session");
+  const session = getSession(callback.cookies.get(sessionName).value, secret);
+  const cookie = `${githubCookie}; ${sessionName}=${createSession({ ...session, projectId: "project-ref" }, secret, 3600)}`;
+  globalThis.fetch = async (input, options) => {
+    expect(String(input)).toBe("https://api.supabase.com/v1/projects/project-ref");
+    expect(options.method).toBe("GET");
+    return Response.json({ id: "project-ref", name: "Database", region: "ap-northeast-2", status: "ACTIVE_HEALTHY", database: { host: "private-host" } });
+  };
+  const result = await handleCloudRequest(request("supabase", "overview", { headers: { cookie } }), "supabase", "overview", config);
+  const data = await result.json();
+  expect(data.project.status).toBe("ACTIVE_HEALTHY");
+  expect(JSON.stringify(data)).not.toContain("private-host");
+});
+
+test("removed selection is not reported connected to a project, and 401 clears provider session", async () => {
+  const { callback } = await connect("supabase");
+  const sessionName = getCloudCookieName("supabase", "session");
+  const session = getSession(callback.cookies.get(sessionName).value, secret);
+  const cookie = `${githubCookie}; ${sessionName}=${createSession({ ...session, projectId: "removed" }, secret, 3600)}`;
+  globalThis.fetch = async () => Response.json([]);
+  const result = await handleCloudRequest(request("supabase", "session", { headers: { cookie } }), "supabase", "session", config);
+  expect((await result.json()).project).toBeNull();
+  globalThis.fetch = async () => new Response("revoked", { status: 401 });
+  const revoked = await handleCloudRequest(request("supabase", "projects", { headers: { cookie } }), "supabase", "projects", config);
+  expect(revoked.status).toBe(401);
+  expect(revoked.cookies.get(sessionName).value).toBe("");
+});
+
+test("disconnect works without server config and only clears browser cookies", async () => {
+  globalThis.fetch = async () => { throw new Error("must not revoke shared installation"); };
+  const result = await handleCloudRequest(request("vercel", "session", { method: "DELETE", headers: { origin: "http://localhost:3000" } }), "vercel", "session", null);
+  expect(result.status).toBe(200);
+  expect(result.cookies.get(getCloudCookieName("vercel", "session")).value).toBe("");
+});
