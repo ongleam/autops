@@ -260,3 +260,12 @@ test("issue writes require repository read consent and are advertised separately
   expect((await authorize(clientId, { scope: "accounts.read issues.write" })).status).toBe(400);
   expect((await authorize(clientId, { scope: "accounts.read repository.read issues.write" })).status).toBe(303);
 });
+
+test("Codex loopback OAuth allows variable listener ports, without allowing external callbacks", async () => {
+  const { client_id: clientId } = await (await register("http://127.0.0.1/callback")).json();
+  expect(typeof clientId).toBe("string");
+  expect((await authorize(clientId, { redirect_uri: "http://127.0.0.1:49152/callback" })).status).toBe(303);
+  for (const uri of ["http://localhost:49152/callback", "http://127.0.0.1.example.com/callback", "http://192.168.1.2/callback", "http://127.0.0.1/callback/other", "http://127.0.0.1/callback?redirect=https://evil.example", "http://user@127.0.0.1/callback", "http://127.0.0.1/callback#fragment"]) {
+    expect((await authorize(clientId, { redirect_uri: uri })).status).toBe(400);
+  }
+});

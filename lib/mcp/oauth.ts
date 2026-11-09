@@ -82,11 +82,21 @@ function createTokens(token: z.infer<typeof githubTokenSchema>, clientId: string
 function validRedirect(value: string) {
   try {
     const url = new URL(value);
-    return url.origin === "https://chatgpt.com" && !url.hash && !url.username && !url.password &&
+    if (url.hash || url.search || url.username || url.password) return false;
+    if (url.protocol === "http:" && url.hostname === "127.0.0.1") return /^\/callback(?:\/[a-zA-Z0-9_-]+)?$/.test(url.pathname);
+    return url.origin === "https://chatgpt.com" &&
       (url.pathname === "/connector_platform_oauth_redirect" ||
         /^\/connector\/oauth\/[a-zA-Z0-9_-]+$/.test(url.pathname) ||
         url.pathname === "/connector_platform/oauth/callback" || /^\/aip\/[a-zA-Z0-9_-]+\/oauth\/callback$/.test(url.pathname));
   } catch { return false; }
+}
+
+function matchesRedirect(registered: string, requested: string) {
+  if (!validRedirect(registered) || !validRedirect(requested)) return false;
+  if (registered === requested) return true;
+  const a = new URL(registered), b = new URL(requested);
+  // RFC 8252 permits the native client's loopback listener to choose an ephemeral port.
+  return a.protocol === "http:" && b.protocol === "http:" && a.hostname === "127.0.0.1" && b.hostname === a.hostname && a.pathname === b.pathname;
 }
 
 function json(body: unknown, status = 200) {
@@ -149,7 +159,7 @@ export async function handleOAuth(request: NextRequest, action: string) {
       const challenge = q.get("code_challenge") || "";
       const state = q.get("state") || "";
       const scope = scopeSchema.safeParse(q.get("scope") ?? ACCOUNT_SCOPE);
-      if (!client || !client.redirectUris.includes(redirectUri) || !validRedirect(redirectUri) || q.get("response_type") !== "code" ||
+      if (!client || !client.redirectUris.some(uri => matchesRedirect(uri, redirectUri)) || !validRedirect(redirectUri) || q.get("response_type") !== "code" ||
         q.get("code_challenge_method") !== "S256" || !/^[a-zA-Z0-9_-]{43}$/.test(challenge) || !state || state.length > 512 ||
         !scope.success || (q.has("resource") && q.get("resource") !== MCP_URL)) {
         return json({ error: "invalid_request" }, 400);
