@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import McpConnectionSteps from "./McpConnectionSteps";
 import { DEMO_PROJECT, type ProjectSettings } from "./types";
 import styles from "./ConnectionGuide.module.css";
 
@@ -99,13 +100,10 @@ ${projectData}
               : "주소를 복사했어요. 아직 MCP가 연결된 상태는 아니에요."
             : "주소를 복사해도 자동으로 연결되지는 않아요."}
         </p>
-        <ol className={styles.instructions}>
-          <li><span>1</span><p>ChatGPT에서 외부 MCP를 연결하는 화면을 열고 위 주소를 등록해주세요.</p></li>
-          <li><span>2</span><p>연결 후 <code>get_project_context</code> 도구로 저장소와 브랜치가 맞는지 확인해주세요.</p></li>
-        </ol>
+        <McpConnectionSteps />
         <div className={styles.notice}>
           <span aria-hidden="true">ⓘ</span>
-          <p>{serverReady ? "ChatGPT에서 인증 방식은 ‘없음’으로 연결해주세요. 프로젝트 확인 도구는 읽기 전용이며, 실제 진단·코드 변경 도구는 아직 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
+          <p>{serverReady ? "계정 조회는 OAuth 인증 후 사용할 수 있어요. 데모 프로젝트 확인과 연결 안내는 공개 도구이며, 실제 진단·코드 변경 도구는 아직 제공하지 않아요." : "서버 제공 여부 확인 전이에요. 주소 복사만으로 연결되지는 않으며, 실제 연결은 ChatGPT의 도구 호출로 확인해주세요."}</p>
         </div>
       </section>
 

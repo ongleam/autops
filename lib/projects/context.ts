@@ -42,19 +42,20 @@ export function getProjectContext() {
 
 export function getConnectionInstructions() {
   return {
-    name: "Compiled",
+    name: "autops",
     serverUrl: MCP_URL,
     transport: "Streamable HTTP",
-    authentication: "No authentication",
+    authentication: "OAuth for get_connected_accounts; public tools require no authentication",
     steps: [
       "ChatGPT의 플러그인에서 사용자 지정 MCP 서버를 추가하세요. 계정과 워크스페이스에 따라 메뉴가 다를 수 있습니다.",
-      `서버 URL에 ${MCP_URL}을 입력하고 인증 없음을 선택하세요.`,
-      "연결 후 get_project_context 도구를 호출해 저장소와 main 브랜치가 일치하는지 확인하세요.",
+      `서버 URL에 ${MCP_URL}을 입력하고 OAuth를 선택하세요. 클라이언트 ID와 비밀키는 비워두고 자동 등록을 사용하세요.`,
+      "설치 후 GitHub 계정을 인증하고 get_connected_accounts로 실제 계정과 허용된 저장소를 확인하세요. get_project_context는 고정 데모 정보입니다.",
       "필요한 GitHub 권한은 별도 연결 도구에서 설정하세요. 이 MCP는 저장소 변경 권한을 제공하지 않습니다.",
       "예약은 ChatGPT에서 실행 시각과 시간대를 지정해 별도로 등록하고 실제 실행을 확인하세요.",
     ],
     verification: "주소 복사나 안내 열람은 연결 확인이 아닙니다. 실제 MCP 도구 호출로 확인하세요.",
     availableTools: [
+      "get_connected_accounts",
       "get_project_context",
       "get_connection_instructions",
       "get_maintenance_prompt",

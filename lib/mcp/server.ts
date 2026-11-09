@@ -5,6 +5,7 @@ import {
   originValidationResponse,
 } from "@modelcontextprotocol/server";
 import { z } from "zod/v4";
+import { getConnectedAccounts, ISSUER, ACCOUNT_SCOPE } from "./oauth";
 import {
   getConnectionInstructions,
   getProjectContext,
@@ -19,12 +20,12 @@ const readOnlyAnnotations = {
 };
 
 // Supabase MCP uses the same per-request factory; legacy support stays enabled here.
-const handler = createMcpHandler(() => {
+const handler = createMcpHandler(({ requestInfo }) => {
   const server = new McpServer(
-    { name: "compiled", version: "0.1.0" },
+    { name: "autops", version: "0.2.0" },
     {
       instructions:
-        "Start with get_project_context to confirm the fixed public demo project and available capabilities. This MCP only supplies public project context and setup guidance. It does not diagnose, modify, deploy, or schedule work. Never claim those actions succeeded.",
+        "Start with get_project_context to confirm the fixed public demo project and available capabilities. Public tools supply demo context and setup guidance. Use get_connected_accounts to verify the user account with OAuth; never infer an account from demo context. It does not diagnose, modify, deploy, or schedule work. Never claim those actions succeeded.",
     },
   );
 
@@ -36,6 +37,7 @@ const handler = createMcpHandler(() => {
         "Confirm the public compiled-ex-project repository, branch, MCP endpoint, and current capabilities. Does not read runtime metrics or grant GitHub access.",
       inputSchema: z.object({}).strict(),
       annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "noauth" }] },
     },
     async () => {
       const context = getProjectContext();
@@ -54,6 +56,7 @@ const handler = createMcpHandler(() => {
         "Get the public MCP URL, authentication mode, connection verification steps, and limitations. Does not create connections or scheduled tasks.",
       inputSchema: z.object({}).strict(),
       annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "noauth" }] },
     },
     async () => {
       const instructions = getConnectionInstructions();
@@ -72,8 +75,30 @@ const handler = createMcpHandler(() => {
         "Get a maintenance prompt for the fixed demo repository. The prompt requires unavailable diagnostic and change tools to be connected before making changes. Does not schedule or execute maintenance.",
       inputSchema: z.object({}).strict(),
       annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "noauth" }] },
     },
     async () => ({ content: [{ type: "text", text: MAINTENANCE_PROMPT }] }),
+  );
+
+  server.registerTool(
+    "get_connected_accounts",
+    {
+      title: "연결된 GitHub 계정 확인",
+      description: "Read the authenticated GitHub account and repositories allowed for the autops GitHub App. Requires OAuth. Browser-only Vercel and Supabase connections are not included. Never returns credentials.",
+      inputSchema: z.object({}).strict(),
+      annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "oauth2", scopes: [ACCOUNT_SCOPE] }] },
+    },
+    async () => {
+      try {
+        const accounts = await getConnectedAccounts(requestInfo);
+        if (accounts) return { content: [{ type: "text" as const, text: JSON.stringify(accounts, null, 2) }], structuredContent: accounts };
+      } catch {
+        // Revoked or expired provider credentials require a new account connection.
+      }
+      return { isError: true, content: [{ type: "text" as const, text: "ChatGPT에서 autops GitHub 계정을 연결하거나 다시 인증해주세요." }],
+        _meta: { "mcp/www_authenticate": [`Bearer resource_metadata="${ISSUER}/.well-known/oauth-protected-resource", error="invalid_token", error_description="Connect your GitHub account", scope="${ACCOUNT_SCOPE}"`] } };
+    },
   );
 
   return server;
