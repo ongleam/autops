@@ -42,7 +42,7 @@ async function getVercelLogs(session: CloudSession, project: CloudProject, start
     throw new CloudError(signal.aborted ? 504 : 502, signal.aborted ? "logs_timeout" : "logs_unavailable");
   });
   if (response.status === 401) throw new CloudError(401, "reconnect");
-  if (response.status === 403) throw new CloudError(403, "logs_permission_required");
+  if (response.status === 403) throw new CloudError(403, "vercel_logs_permission_required");
   if (response.status === 404) throw new CloudError(404, "logs_not_found");
   if (response.status === 402) throw new CloudError(402, "logs_plan_required");
   if (!response.ok) throw new CloudError(502, "logs_unavailable");
