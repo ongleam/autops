@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import GitHubConnection from "@/components/onboarding/GitHubConnection";
 import ProjectSetupForm from "@/components/setup/ProjectSetupForm";
 import ConnectionGuide from "@/components/setup/ConnectionGuide";
 import { DEFAULT_PROJECT_SETTINGS, DEMO_PROJECT, type ProjectSettings } from "@/components/setup/types";
@@ -69,6 +70,7 @@ export default function Home() {
             <div className="setup-main-column">
               <section id="project" className="setup-project-card" aria-labelledby="project-title">
                 <div className="setup-section-heading"><div><span className="setup-section-step">STEP 01</span><h2 id="project-title">어떤 서비스를 살펴볼까요?</h2><p>이 브라우저에 보관할 기본 정보를 입력해주세요.</p></div><span className={`setup-local-state ${saved ? "is-saved" : ""}`}>{saved ? "브라우저에 저장됨" : "기본 정보"}</span></div>
+                <GitHubConnection />
                 <ProjectSetupForm settings={settings} onChange={updateSettings} onSaved={() => setSaved(true)} />
               </section>
               <ConnectionGuide settings={settings} mcpUrl={`${origin}/api/mcp`} serverReady={mcpReady} />
