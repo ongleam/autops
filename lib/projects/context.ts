@@ -43,16 +43,17 @@ export function getConnectionInstructions() {
     name: "autops",
     serverUrl: MCP_URL,
     transport: "Streamable HTTP",
-    authentication: "No authentication",
+    authentication: "OAuth for get_connected_accounts; public tools require no authentication",
     steps: [
       "ChatGPT의 플러그인에서 사용자 지정 MCP 서버를 추가하세요. 계정과 워크스페이스에 따라 메뉴가 다를 수 있습니다.",
-      `서버 URL에 ${MCP_URL}을 입력하고 인증 없음을 선택하세요.`,
-      "연결 후 get_project_context 도구를 호출해 저장소와 main 브랜치가 일치하는지 확인하세요.",
+      `서버 URL에 ${MCP_URL}을 입력하고 OAuth를 선택하세요. 클라이언트 ID와 비밀키는 비워두고 자동 등록을 사용하세요.`,
+      "설치 후 GitHub 계정을 인증하고 get_connected_accounts로 실제 계정과 허용된 저장소를 확인하세요. get_project_context는 고정 데모 정보입니다.",
       "필요한 GitHub 권한은 별도 연결 도구에서 설정하세요. 이 MCP는 저장소 변경 권한을 제공하지 않습니다.",
       "예약은 ChatGPT에서 실행 시각과 시간대를 지정해 별도로 등록하고 실제 실행을 확인하세요.",
     ],
     verification: "주소 복사나 안내 열람은 연결 확인이 아닙니다. 실제 MCP 도구 호출로 확인하세요.",
     availableTools: [
+      "get_connected_accounts",
       "get_project_context",
       "get_connection_instructions",
       "get_maintenance_prompt",
@@ -61,7 +62,7 @@ export function getConnectionInstructions() {
     ],
     limitations: [
       "제한된 실제 API 진단만 제공합니다. CPU·메모리 계측, 변경 전후 비교·코드 변경·배포·예약 도구는 제공하지 않습니다.",
-      "고정 공개 데모 저장소와 서비스만 조회합니다. 다른 사용자·비공개 저장소는 이 공개 MCP에 노출하지 않습니다.",
+      "공개 도구는 고정 공개 데모만 조회합니다. get_connected_accounts는 OAuth로 인증한 본인의 계정과 허용된 저장소만 반환합니다.",
       "이 서버에는 비밀번호·API 키·토큰을 입력할 필요가 없습니다.",
     ],
   };

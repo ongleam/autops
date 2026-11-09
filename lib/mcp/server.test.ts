@@ -21,6 +21,7 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
       const { tools } = await client.listTools();
       assert.deepEqual(tools.map((tool) => tool.name).sort(), [
         "diagnose_project",
+        "get_connected_accounts",
         "get_connection_instructions",
         "get_maintenance_prompt",
         "get_project_context",
@@ -41,7 +42,10 @@ for (const protocolVersion of [undefined, "2025-11-25"]) {
         scheduling: false,
       });
       const instructions = await client.callTool({ name: "get_connection_instructions", arguments: {} });
-      assert.equal((instructions.structuredContent as Record<string, unknown>).authentication, "No authentication");
+      assert.equal((instructions.structuredContent as Record<string, unknown>).authentication, "OAuth for get_connected_accounts; public tools require no authentication");
+      const accounts = await client.callTool({ name: "get_connected_accounts", arguments: {} });
+      assert.equal(accounts.isError, true);
+      assert.ok(accounts._meta?.["mcp/www_authenticate"]);
       const prompt = await client.callTool({ name: "get_maintenance_prompt", arguments: {} });
       assert.ok(prompt.content.some((item) => item.type === "text" && item.text.includes("diagnose_project")));
       const invalid = await client.callTool({ name: "get_project_context", arguments: { repository: "https://example.com" } });

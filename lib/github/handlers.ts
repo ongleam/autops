@@ -1,3 +1,4 @@
+import { handleMcpGitHubCallback } from "../mcp/oauth";
 import { createHash, createPrivateKey, randomBytes, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createAppJwt, createGitHubClient, GitHubError, validateSelection } from "./client";
@@ -118,7 +119,10 @@ export async function handleGitHubRequest(request: NextRequest, action: string):
       setCookie(response, "flow", createSession(flow, config.secret, 600), 600);
       return protect(response);
     }
-    if (request.method === "GET" && action === "callback") return protect(await callback(request, config));
+    if (request.method === "GET" && action === "callback") {
+      if (request.nextUrl.searchParams.get("state")?.startsWith("mcp.")) return protect(handleMcpGitHubCallback(request));
+      return protect(await callback(request, config));
+    }
     if (request.method === "GET" && action === "session" && !request.cookies.has(getCookieName("session"))) {
       return protect(NextResponse.json({ configured: true, user: null, repository: null }));
     }
