@@ -193,7 +193,7 @@ test("project-scoped log access reports a bounded live sample when history acces
 });
 
 test("Hobby retention retries once and reports the excluded interval without changing the requested end", async () => {
-  await saveConnection("vercel",session("1",{logsToken:"history-token-12345",refreshToken:"refresh-private"}));
+  await saveConnection("vercel",session("1",{logsToken:"history-token-1234567890",refreshToken:"refresh-private"}));
   const providerFetch=globalThis.fetch;
   const windows=[];
   globalThis.fetch=async (input,init={}) => {
