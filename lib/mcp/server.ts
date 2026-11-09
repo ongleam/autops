@@ -24,11 +24,8 @@ const readOnlyAnnotations = {
 };
 
 function toolError(error: unknown) {
-  if (error instanceof CloudError && error.code === "vercel_logs_permission_required") return {
-    isError: true, content: [{ type: "text" as const, text: "Vercel denied this Integration token access to runtime logs (HTTP 403). Project and deployment status access is separate and can remain connected. Repeating OAuth consent is not a verified fix. Inspect the project's Logs tab in the Vercel dashboard or use a separately authorized log source. No runtime logs were read." }],
-  };
   if (error instanceof CloudError && error.code === "logs_permission_required") return {
-    isError: true, content: [{ type: "text" as const, text: "The provider has not granted access to these logs. Review the provider’s log permissions, then reconnect it on https://autops-app.vercel.app/onboarding using Review service permissions. Supabase requires Analytics: Read-only; provider plan and retention restrictions may also apply. No logs were read." }],
+    isError: true, content: [{ type: "text" as const, text: "The provider has not granted access to these logs. Review the provider’s log permissions, then reconnect it on https://autops-app.vercel.app/onboarding using Review service permissions. Supabase requires Analytics: Read-only. Vercel requires a separate user-owned API token under Vercel server logs on that page because Integration OAuth does not grant runtime log access. Provider plan and retention restrictions may also apply. No logs were read." }],
   };
   if (error instanceof McpAuthorizationError) return {
     isError: true, content: [{ type: "text" as const, text: error.message }],
