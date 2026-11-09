@@ -28,7 +28,13 @@ const runtimeLog = z.object({
   responseStatusCode: z.number().finite().optional(), rowId: z.string().optional(), messageTruncated: z.boolean().optional(),
 });
 
-async function getVercelLogHistory(session: CloudSession, project: CloudProject, start: Date, limit: number, end: Date) {
+type VercelHistory = {
+  provider: "vercel"; project: CloudProject; source: "runtime"; window: { start: string; end: string };
+  requestedWindow?: { start: string; end: string }; entries: Record<string, unknown>[]; truncated: boolean;
+  coverage: { mode: "historical_query"; excludedIntervals: { start: string; end: string }[]; retentionClipped?: boolean }; notice: string;
+};
+
+async function getVercelLogHistory(session: CloudSession, project: CloudProject, start: Date, limit: number, end: Date, allowRetentionRetry = true): Promise<VercelHistory> {
   const response = await fetch(`https://api.vercel.com/v1/observability/events?teamId=${encodeURIComponent(session.teamId!)}`, {
     method: "POST", headers: { Authorization: `Bearer ${session.logsToken}`, "Content-Type": "application/json", Accept: "application/json", "x-vercel-observability-query-reason": "autops/project-logs" },
     body: JSON.stringify({ event: "vercel.log", scope: { ownerId: session.teamId, projectIds: [project.id] },
@@ -41,6 +47,16 @@ async function getVercelLogHistory(session: CloudSession, project: CloudProject,
   if (!response.ok) {
     const error = await response.json().catch(() => null);
     const detail = typeof error?.error?.message === "string" ? redact(error.error.message, [session.token, session.logsToken!]).slice(0, 320) : undefined;
+    if (response.status === 400 && detail?.includes("hobby plan does not retain runtime logs") && allowRetentionRetry) {
+      // Hobby retains one hour relative to provider time, which advances while the request is in flight.
+      const retainedStart = new Date(Date.now() - 60 * 60_000 + 15_000);
+      if (retainedStart > start && retainedStart < end) {
+        const retained = await getVercelLogHistory(session, project, retainedStart, limit, end, false);
+        return { ...retained, requestedWindow: { start: start.toISOString(), end: end.toISOString() },
+          coverage: { ...retained.coverage, retentionClipped: true,
+            excludedIntervals: [...retained.coverage.excludedIntervals, { start: start.toISOString(), end: retainedStart.toISOString() }] } };
+      }
+    }
     throw new CloudError(502, `logs_query_http_${response.status}`, detail);
   }
   const data = z.object({ events: z.array(z.record(z.string(), z.unknown())), pagination: z.object({ hasMore: z.boolean() }),
